@@ -5,6 +5,7 @@ from app.api.conversations import router as conversations_router
 from app.api.dashboard import router as dashboard_router
 from app.api.integrations import router as integrations_router
 from app.api.leads import router as leads_router
+from app.api.meetings import router as meetings_router
 
 __all__ = [
     "auth_router",
@@ -14,4 +15,5 @@ __all__ = [
     "dashboard_router",
     "integrations_router",
     "leads_router",
+    "meetings_router",
 ]

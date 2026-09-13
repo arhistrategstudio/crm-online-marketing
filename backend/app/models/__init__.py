@@ -8,6 +8,7 @@ from app.models.crm import (
     Integration,
     Lead,
     LeadStage,
+    Meeting,
     Message,
     User,
 )
@@ -22,6 +23,7 @@ __all__ = [
     "Integration",
     "Lead",
     "LeadStage",
+    "Meeting",
     "Message",
     "User",
 ]

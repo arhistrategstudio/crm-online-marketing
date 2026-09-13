@@ -1,7 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 from enum import Enum
 
-from sqlalchemy import Enum as SqlEnum, ForeignKey, Integer, String, Text
+from sqlalchemy import DateTime, Enum as SqlEnum, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.models.base import Base, TimestampMixin
@@ -99,6 +99,22 @@ class Integration(Base, TimestampMixin):
     channel: Mapped[Channel] = mapped_column(SqlEnum(Channel), unique=True)
     status: Mapped[str] = mapped_column(String(30), default="Nije povezano")
     configuration: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class Meeting(Base, TimestampMixin):
+    __tablename__ = "meetings"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    contact_id: Mapped[int | None] = mapped_column(ForeignKey("contacts.id"), nullable=True, index=True)
+    title: Mapped[str] = mapped_column(String(150))
+    start_at: Mapped[datetime] = mapped_column(DateTime, index=True)
+    end_at: Mapped[datetime] = mapped_column(DateTime)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    contact: Mapped["Contact | None"] = relationship()
+
+    @property
+    def contact_name(self) -> str | None:
+        return self.contact.name if self.contact else None
 
 
 class Campaign(Base, TimestampMixin):

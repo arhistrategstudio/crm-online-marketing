@@ -11,6 +11,7 @@ from app.api import (
     dashboard_router,
     integrations_router,
     leads_router,
+    meetings_router,
 )
 from app.config import get_settings
 from app.database import engine
@@ -48,6 +49,7 @@ app.include_router(dashboard_router, prefix="/api/v1", dependencies=protected)
 app.include_router(integrations_router, prefix="/api/v1", dependencies=protected)
 app.include_router(leads_router, prefix="/api/v1", dependencies=protected)
 app.include_router(campaigns_router, prefix="/api/v1", dependencies=protected)
+app.include_router(meetings_router, prefix="/api/v1", dependencies=protected)
 
 
 @app.get("/api/v1/health")

@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
-import { TrendingUp, MoreHorizontal, ChevronsLeft, ChevronsRight } from "lucide-react";
+import { ChevronsLeft, ChevronsRight, Plus } from "lucide-react";
+import { stageLabels } from "../types";
+import { MeetingModal, MeetingContactOption } from "../components/MeetingModal";
 
 type Summary = {
   new_inquiries: number;
@@ -20,32 +22,141 @@ const emptySummary: Summary = {
   avg_cost_per_lead: null,
 };
 
-const demoContacts = [
-  { name: "Sarah Johnson", sub: "IRA 100k", date: "2 Oct", status: "Qualified", statusClass: "status-qualified" },
-  { name: "Michael Chen", sub: "IRA 75k", date: "1 Oct", status: "Hot", statusClass: "status-hot" },
-  { name: "Emma Wilson", sub: "IRA 50k", date: "30 Sep", status: "Qualified", statusClass: "status-qualified" },
-  { name: "James Brown", sub: "IRA 25k", date: "29 Sep", status: "Qualified", statusClass: "status-yellow-green" },
-];
+type Prospect = {
+  lead_id: number;
+  contact_id: number;
+  name: string;
+  stage: string;
+  value: number | null;
+  updated_at: string;
+};
 
-const calendarMonths = ["October 2025", "November 2025", "December 2025"];
+type Meeting = {
+  id: number;
+  contact_id: number | null;
+  contact_name: string | null;
+  title: string;
+  start_at: string;
+  end_at: string;
+};
+
+const monthNames = [
+  "Januar", "Februar", "Mart", "April", "Maj", "Jun",
+  "Jul", "Avgust", "Septembar", "Oktobar", "Novembar", "Decembar",
+];
+const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+
+const stageStatusClass: Record<string, string> = {
+  new_inquiry: "status-hot",
+  offer_sent: "status-qualified",
+  waiting_response: "status-yellow-green",
+  scheduled_paid: "status-scheduled",
+};
+
+function startOfWeek(date: Date): Date {
+  const d = new Date(date);
+  d.setHours(0, 0, 0, 0);
+  const day = d.getDay();
+  const diff = day === 0 ? -6 : 1 - day;
+  d.setDate(d.getDate() + diff);
+  return d;
+}
+
+function addDays(date: Date, amount: number): Date {
+  const d = new Date(date);
+  d.setDate(d.getDate() + amount);
+  return d;
+}
+
+function sameDate(a: Date, b: Date): boolean {
+  return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+}
+
+function pad(n: number): string {
+  return n.toString().padStart(2, "0");
+}
+
+function toLocalIso(date: Date, hours = 0, minutes = 0): string {
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(hours)}:${pad(minutes)}:00`;
+}
+
+function formatTime(iso: string): string {
+  const d = new Date(iso);
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getDate()} ${monthNames[d.getMonth()].slice(0, 3)}`;
+}
 
 export function Dashboard() {
   const [summary, setSummary] = useState<Summary>(emptySummary);
-  const [monthIndex, setMonthIndex] = useState(1);
+  const [prospects, setProspects] = useState<Prospect[]>([]);
+  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [contacts, setContacts] = useState<MeetingContactOption[]>([]);
+  const [addMeeting, setAddMeeting] = useState(false);
 
   useEffect(() => {
     apiFetch("/dashboard/summary")
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then(setSummary)
       .catch(() => undefined);
+    apiFetch("/dashboard/prospects?limit=5")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then(setProspects)
+      .catch(() => undefined);
+    apiFetch("/contacts")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then((items: { id: number; name: string }[]) => setContacts(items.map((c) => ({ id: c.id, name: c.name }))))
+      .catch(() => undefined);
   }, []);
 
+  const loadMeetings = () => {
+    const weekEnd = addDays(weekStart, 7);
+    apiFetch(`/meetings?start=${toLocalIso(weekStart)}&end=${toLocalIso(weekEnd)}`)
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then(setMeetings)
+      .catch(() => undefined);
+  };
+
+  useEffect(loadMeetings, [weekStart]);
+
+  const submitMeeting = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const data = new FormData(event.currentTarget);
+    const date = String(data.get("date"));
+    const startTime = String(data.get("start_time"));
+    const endTime = String(data.get("end_time"));
+    const contactId = String(data.get("contact_id") || "");
+    const response = await apiFetch("/meetings", {
+      method: "POST",
+      body: JSON.stringify({
+        title: String(data.get("title") || "").trim(),
+        contact_id: contactId ? Number(contactId) : null,
+        start_at: `${date}T${startTime}:00`,
+        end_at: `${date}T${endTime}:00`,
+      }),
+    });
+    if (!response.ok) {
+      alert("Sastanak nije sačuvan. Provera: vreme završetka mora biti posle početka.");
+      return;
+    }
+    setAddMeeting(false);
+    loadMeetings();
+  };
+
   const metrics = [
-    { label: "Total Revenue", value: "$2,445,744", trend: "+8.2% ↑", trendClass: "trend-green" },
-    { label: "Avg Deal Size", value: "$489,149", trend: null, trendClass: "" },
-    { label: "Total Clients", value: "5", trend: "+20% ↑", trendClass: "trend-green" },
-    { label: "Total Invoices", value: "31", trend: "+8.2% ↑", trendClass: "trend-pink" },
+    { label: "Novi upiti", value: summary.new_inquiries },
+    { label: "Aktivni leadovi", value: summary.active_leads },
+    { label: "Ponude poslate", value: summary.offers_sent },
+    { label: "Zakazano / Plaćeno", value: summary.scheduled_paid },
   ];
+
+  const today = new Date();
+  const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const meetingCardColors = ["yellow", "pink"];
 
   return (
     <>
@@ -54,8 +165,8 @@ export function Dashboard() {
       </div>
       <div className="card metrics-card">
         <div className="metrics-card-header">
-          <h2>My Performance Over Time</h2>
-          <p className="card-subtitle">29 September 2025</p>
+          <h2>Pregled prodajnog levka</h2>
+          <p className="card-subtitle">{today.getDate()} {monthNames[today.getMonth()]} {today.getFullYear()}</p>
         </div>
         <div className="metrics-row">
           {metrics.map((m) => (
@@ -63,11 +174,6 @@ export function Dashboard() {
               <span className="metric-label">{m.label}</span>
               <div className="metric-value-row">
                 <span className="metric-value">{m.value}</span>
-                {m.trend && (
-                  <span className={`metric-trend ${m.trendClass}`}>
-                    <TrendingUp size={12} /> {m.trend}
-                  </span>
-                )}
               </div>
             </div>
           ))}
@@ -76,25 +182,27 @@ export function Dashboard() {
       <div className="bottom-row-wide">
         <div className="card">
           <h2>Prospects to Watch</h2>
-          <p className="card-subtitle contact-list-subtitle">29 September 2025</p>
+          <p className="card-subtitle contact-list-subtitle">Najnovije aktivnosti u levku</p>
           <div className="contact-list">
-            {demoContacts.map((c) => (
-              <div className="contact-row" key={c.name}>
+            {prospects.length === 0 && <p className="dropdown-empty">Nema aktivnih leadova.</p>}
+            {prospects.map((p) => (
+              <div className="contact-row" key={p.lead_id}>
                 <div className="contact-main">
-                  <div className="contact-name">{c.name}</div>
+                  <div className="contact-name">{p.name}</div>
                   <div className="contact-sub">
-                    <span>📌</span> {c.sub}
+                    {p.value != null ? `Vrednost: ${p.value.toLocaleString("sr-RS")} RSD` : "Bez unete vrednosti"}
                   </div>
                 </div>
                 <div className="contact-field">
-                  <span className="contact-field-label">Last Contacted</span>
-                  <span className="contact-date">{c.date}</span>
+                  <span className="contact-field-label">Poslednja izmena</span>
+                  <span className="contact-date">{formatDate(p.updated_at)}</span>
                 </div>
                 <div className="contact-field">
                   <span className="contact-field-label">Status</span>
-                  <span className={`contact-status ${c.statusClass}`}>{c.status}</span>
+                  <span className={`contact-status ${stageStatusClass[p.stage] || "status-qualified"}`}>
+                    {stageLabels[p.stage] || p.stage}
+                  </span>
                 </div>
-                <span className="contact-actions"><MoreHorizontal size={16} /></span>
               </div>
             ))}
           </div>
@@ -103,66 +211,48 @@ export function Dashboard() {
           <div className="calendar-header">
             <h2>Upcoming Meetings</h2>
             <div className="calendar-nav">
-              <button
-                type="button"
-                disabled={monthIndex === 0}
-                onClick={() => setMonthIndex((i) => Math.max(0, i - 1))}
-              >
+              <button type="button" onClick={() => setWeekStart((d) => addDays(d, -7))}>
                 <ChevronsLeft size={16} />
               </button>
-              <span className="calendar-month">{calendarMonths[monthIndex]}</span>
-              <button
-                type="button"
-                disabled={monthIndex === calendarMonths.length - 1}
-                onClick={() => setMonthIndex((i) => Math.min(calendarMonths.length - 1, i + 1))}
-              >
+              <span className="calendar-month">{monthNames[weekStart.getMonth()]} {weekStart.getFullYear()}</span>
+              <button type="button" onClick={() => setWeekStart((d) => addDays(d, 7))}>
                 <ChevronsRight size={16} />
+              </button>
+              <button type="button" onClick={() => setAddMeeting(true)} aria-label="Dodaj sastanak">
+                <Plus size={16} />
               </button>
             </div>
           </div>
           <div className="date-strip">
-            {[
-              { label: 'Mon', num: 6 },
-              { label: 'Tue', num: 7 },
-              { label: 'Wed', num: 8 },
-              { label: 'Thu', num: 9 },
-              { label: 'Fri', num: 10 },
-              { label: 'Sat', num: 11 },
-              { label: 'Sun', num: 12 },
-            ].map((d) => (
-              <div className="date-col" key={d.label}>
-                <span className="date-col-label">{d.label}</span>
-                <div className={`day ${d.label === 'Thu' ? 'active' : ''}`}>{d.num}</div>
+            {weekDays.map((d, i) => (
+              <div className="date-col" key={i}>
+                <span className="date-col-label">{dayLabels[i]}</span>
+                <div className={`day ${sameDate(d, today) ? "active" : ""}`}>{d.getDate()}</div>
               </div>
             ))}
           </div>
-          <p className="calendar-today-label">Today</p>
+          <p className="calendar-today-label">
+            {weekDays.some((d) => sameDate(d, today)) ? "Ova nedelja" : "Izabrana nedelja"}
+          </p>
           <div className="meetings-list">
-            <div className="meeting-card yellow">
-              <div className="meeting-info">
-                <div className="meeting-name">Meeting With John Doe</div>
-                <div className="meeting-time">10:00 - 11:00 AM</div>
+            {meetings.length === 0 && <p className="dropdown-empty">Nema zakazanih sastanaka.</p>}
+            {meetings.map((m, i) => (
+              <div className={`meeting-card ${meetingCardColors[i % meetingCardColors.length]}`} key={m.id}>
+                <div className="meeting-info">
+                  <div className="meeting-name">{m.title}{m.contact_name ? ` — ${m.contact_name}` : ""}</div>
+                  <div className="meeting-time">{formatTime(m.start_at)} - {formatTime(m.end_at)}</div>
+                </div>
               </div>
-              <span className="meeting-dots"><MoreHorizontal size={16} /></span>
-            </div>
-            <div className="meeting-card pink">
-              <div className="meeting-info">
-                <div className="meeting-name">Meeting With Michelle</div>
-                <div className="meeting-time">12:00 - 01:00 PM</div>
-              </div>
-              <span className="meeting-dots"><MoreHorizontal size={16} /></span>
-            </div>
+            ))}
           </div>
-          <div className="calendar-footer">Fri, Nov 19</div>
+          <div className="calendar-footer">
+            {meetings.length > 0 ? `${meetings.length} sastanak(a) ove nedelje` : "Nema zakazanih sastanaka ove nedelje"}
+          </div>
         </div>
       </div>
-      <div className="bookmark-card">
-        <div>
-          <div className="bookmark-title">Bookmarked Prospects</div>
-          <div className="bookmark-subtitle">You have 39 prospects bookmarked</div>
-        </div>
-        <span className="bookmark-count">39</span>
-      </div>
+      {addMeeting && (
+        <MeetingModal contacts={contacts} onClose={() => setAddMeeting(false)} onSubmit={submitMeeting} />
+      )}
     </>
   );
 }
