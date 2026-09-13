@@ -1,41 +1,58 @@
 import { useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
-import { stageKeys, stageLabels, stages } from "../types";
+import { LeadItem, stageKeys, stageLabels, stages } from "../types";
 
 export function Pipeline() {
-  const [lead, setLead] = useState<string>(stages[0]);
-  const [leadId, setLeadId] = useState<number | null>(null);
+  const [leads, setLeads] = useState<LeadItem[]>([]);
 
-  useEffect(() => {
+  const load = () => {
     apiFetch("/leads")
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((items) => {
-        if (items.length) {
-          setLeadId(items[0].id);
-          setLead(stageLabels[items[0].stage] || stages[0]);
-        }
-      })
+      .then(setLeads)
       .catch(() => undefined);
-  }, []);
+  };
 
-  const changeStage = async (next: string) => {
-    setLead(next);
-    if (!leadId) return;
-    const response = await apiFetch(`/leads/${leadId}`, {
+  useEffect(load, []);
+
+  const changeStage = async (lead: LeadItem, nextLabel: string) => {
+    const nextStage = stageKeys[nextLabel as keyof typeof stageKeys];
+    setLeads((current) => current.map((l) => (l.id === lead.id ? { ...l, stage: nextStage } : l)));
+    const response = await apiFetch(`/leads/${lead.id}`, {
       method: "PUT",
-      body: JSON.stringify({ stage: stageKeys[next as keyof typeof stageKeys] }),
+      body: JSON.stringify({ stage: nextStage, campaign_id: lead.campaign_id, value: lead.value }),
     });
-    if (!response.ok) alert("Faza leada nije sačuvana.");
+    if (!response.ok) {
+      alert("Faza leada nije sačuvana.");
+      load();
+    }
   };
 
   return (
-    <section className="card pipeline-card">
-      <h2>Ana Jovanović</h2>
-      <p>Promeni fazu leada:</p>
-      <select value={lead} onChange={(e) => changeStage(e.target.value)}>
-        {stages.map((stage) => <option key={stage}>{stage}</option>)}
-      </select>
-      <p className="badge pipeline-stage">{lead}</p>
-    </section>
+    <div className="pipeline-board">
+      {stages.map((stageLabel) => {
+        const stageKey = stageKeys[stageLabel];
+        const stageLeads = leads.filter((lead) => lead.stage === stageKey);
+        return (
+          <div className="pipeline-column" key={stageLabel}>
+            <div className="pipeline-column-header">
+              <strong>{stageLabel}</strong>
+              <span className="badge">{stageLeads.length}</span>
+            </div>
+            {!stageLeads.length && <p className="muted-line">Nema leadova.</p>}
+            {stageLeads.map((lead) => (
+              <div className="lead-card" key={lead.id}>
+                <strong>{lead.contact_name}</strong>
+                <span>{lead.value !== null ? `${lead.value.toLocaleString("sr-RS")} RSD` : "Bez vrednosti"}</span>
+                <select value={stageLabels[lead.stage] || stages[0]} onChange={(e) => changeStage(lead, e.target.value)}>
+                  {stages.map((s) => (
+                    <option key={s}>{s}</option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+        );
+      })}
+    </div>
   );
 }

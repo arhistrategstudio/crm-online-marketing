@@ -1,6 +1,27 @@
 export type Page = "Dashboard" | "Inbox" | "Kontakti" | "Prodajni levak" | "Kampanje" | "Integracije" | "Podešavanja";
 
-export type ContactItem = { id: number; name: string; source: string; phone: string };
+export type ContactItem = { id: number; name: string; source: string; phone: string; status: string };
+
+export type ConversationItem = {
+  id: number;
+  contact_id: number;
+  contact_name: string;
+  channel: string;
+  unread_count: number;
+  last_message: string | null;
+  created_at: string;
+};
+
+export type LeadItem = {
+  id: number;
+  contact_id: number;
+  contact_name: string;
+  campaign_id: number | null;
+  stage: string;
+  value: number | null;
+  created_at: string;
+  updated_at: string;
+};
 
 export type IntegrationItem = { channel: string; status: string };
 

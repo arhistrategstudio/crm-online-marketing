@@ -10,8 +10,10 @@ class ConversationRead(BaseModel):
 
     id: int
     contact_id: int
+    contact_name: str
     channel: Channel
     unread_count: int
+    last_message: str | None
     created_at: datetime
 
 

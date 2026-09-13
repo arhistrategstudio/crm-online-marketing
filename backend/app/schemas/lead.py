@@ -23,6 +23,7 @@ class LeadRead(BaseModel):
 
     id: int
     contact_id: int
+    contact_name: str
     campaign_id: int | None
     stage: LeadStage
     value: int | None

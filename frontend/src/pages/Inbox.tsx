@@ -1,23 +1,35 @@
 import { FormEvent, useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
+import { ConversationItem, channelLabels } from "../types";
+
+type MessageItem = { id: number; sender: string; content: string };
 
 export function Inbox() {
+  const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [conversationId, setConversationId] = useState<number | null>(null);
-  const [messages, setMessages] = useState(["Zdravo, interesuje me ponuda.", "Hvala na upitu, šaljemo ponudu danas."]);
+  const [messages, setMessages] = useState<MessageItem[]>([]);
   const [message, setMessage] = useState("");
 
-  useEffect(() => {
+  const loadConversations = () => {
     apiFetch("/conversations")
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((items) => { if (items.length) setConversationId(items[0].id); })
+      .then((items: ConversationItem[]) => {
+        setConversations(items);
+        setConversationId((current) => current ?? (items.length ? items[0].id : null));
+      })
       .catch(() => undefined);
-  }, []);
+  };
+
+  useEffect(loadConversations, []);
 
   useEffect(() => {
     if (!conversationId) return;
     apiFetch(`/conversations/${conversationId}/messages`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((items) => setMessages(items.map((item: { content: string }) => item.content)))
+      .then((items: MessageItem[]) => {
+        setMessages(items);
+        setConversations((current) => current.map((c) => (c.id === conversationId ? { ...c, unread_count: 0 } : c)));
+      })
       .catch(() => undefined);
   }, [conversationId]);
 
@@ -33,20 +45,53 @@ export function Inbox() {
       return;
     }
     const saved = await response.json();
-    setMessages([...messages, saved.content]);
+    setMessages([...messages, saved]);
+    setConversations((current) =>
+      current.map((c) => (c.id === conversationId ? { ...c, last_message: saved.content } : c)),
+    );
     setMessage("");
   };
 
+  const selected = conversations.find((c) => c.id === conversationId) || null;
+
   return (
-    <section className="card">
-      <h2>Ana Jovanović · Instagram</h2>
-      {messages.map((item, index) => (
-        <p className={index % 2 ? "out" : "in"} key={`${item}-${index}`}>{item}</p>
-      ))}
-      <form className="inbox-form" onSubmit={submit}>
-        <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Napišite poruku..." />
-        <button>Pošalji</button>
-      </form>
-    </section>
+    <div className="inbox-layout">
+      <section className="card inbox-list">
+        <h2>Razgovori</h2>
+        {!conversations.length && <p className="muted-line">Još uvek nema razgovora.</p>}
+        {conversations.map((c) => (
+          <button
+            key={c.id}
+            className={`inbox-list-item${c.id === conversationId ? " active" : ""}`}
+            onClick={() => setConversationId(c.id)}
+          >
+            <div className="inbox-list-item-top">
+              <strong>{c.contact_name}</strong>
+              {c.unread_count > 0 && <span className="notif-badge">{c.unread_count}</span>}
+            </div>
+            <span className="muted-line">{channelLabels[c.channel] || c.channel}</span>
+            {c.last_message && <p className="inbox-list-preview">{c.last_message}</p>}
+          </button>
+        ))}
+      </section>
+      <section className="card inbox-thread">
+        {selected ? (
+          <>
+            <h2>{selected.contact_name} · {channelLabels[selected.channel] || selected.channel}</h2>
+            <div className="inbox-thread-messages">
+              {messages.map((item) => (
+                <p className={item.sender === "agent" ? "out" : "in"} key={item.id}>{item.content}</p>
+              ))}
+            </div>
+            <form className="inbox-form" onSubmit={submit}>
+              <input value={message} onChange={(e) => setMessage(e.target.value)} placeholder="Napišite poruku..." />
+              <button>Pošalji</button>
+            </form>
+          </>
+        ) : (
+          <p className="muted-line">Izaberite razgovor sa leve strane.</p>
+        )}
+      </section>
+    </div>
   );
 }
