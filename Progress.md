@@ -43,10 +43,15 @@ Ovaj fajl je dnevnik rada na projektu. Posle svakog završenog koraka dopunjuje 
 32. Pripremljena je GitHub struktura: `LICENSE` (MIT), `.editorconfig`, `.github/workflows/ci.yml` (backend pytest + frontend build), `CONTRIBUTING.md`, prošireni `docs/` (novi `auth.md`, `deployment.md`, ažurirani `architecture.md`/`integrations.md`/`api.md`), pun `README.md`, i `.gitignore` dopunjen sa `*.db`/`*.tsbuildinfo`.
 
 33. Projekat je postavljen na GitHub: `git init`, prvi commit i push preko `gh repo create` na **https://github.com/arhistrategstudio/crm-online-marketing** (javan repo, MIT licenca). `.github/workflows/ci.yml` NIJE pushovan — GitHub CLI token nema `workflow` OAuth scope pa je GitHub odbio taj fajl; fajl ostaje lokalno i biće dodat naknadno (vidi Sledeće).
+34. Korisnik je ručno testirao aplikaciju u pravom pregledaču (Claude in Chrome alat je ostao neupotrebljiv i posle više pokušaja i buđenja Chrome prozora — verovatno trajna posledica ranijeg kritičnog nedostatka RAM memorije u ovoj sesiji). Pronađena i ispravljena greška: u Podešavanjima, promena lozinke je bacala `Cannot read properties of null (reading 'reset')` — `event.currentTarget` u `frontend/src/pages/Settings.tsx` postaje `null` posle `await` (React nulira SyntheticEvent posle sinhronog dela handler-a), pa je forma referenca sada uzeta pre `await` poziva. Ostale forme (Login, Signup, Contacts, Campaigns) nisu imale ovaj problem jer ne koriste `event.currentTarget` posle `await`. **Ova ispravka još nije komitovana/pushovana na GitHub.**
+
+35. Ispravka u `frontend/src/pages/Settings.tsx` (promena lozinke) je komitovana (`7a172b0`) i pushovana na GitHub.
+36. Korisnik je odobrio `workflow` scope GitHub CLI tokenu preko device flow-a (`gh auth refresh -h github.com -s workflow`). `.github/workflows/ci.yml` je komitovan (`d910b93`) i pushovan. Prvi CI run je pao: backend job je koristio `pytest -v` (konzolna skripta), koja za razliku od `python -m pytest` ne dodaje tekući direktorijum u `sys.path`, pa `app` paket nije mogao da se importuje (`ModuleNotFoundError: No module named 'app'`). Ispravljeno na `python -m pytest -v` (`d703e43`) i pushovano — CI sada prolazi (i backend i frontend job).
+
+37. Claude in Chrome je ponovo probao (nova kartica, nova grupa kartica) da automatizovano testira ekrane — greška „Script injection timed out"/„Page still loading" i dalje se javlja iako se stranica vidljivo učitava (naslov taba je ispravan). Potvrđeno da je ovo i dalje trajni problem sa ekstenzijom (isto kao korak 31), ne sa aplikacijom.
 
 ## Sledeće
 
-34. Odobriti `workflow` scope GitHub CLI tokenu (`gh auth refresh -h github.com -s workflow` — traži da se otvori `https://github.com/login/device` i unese kod ispisan u terminalu, to mora korisnik ručno da uradi), pa zatim `git add .github/workflows/ci.yml`, commit i push da CI proradi.
-35. Kad korisnik prosledi Google OAuth Client ID, upisati ga u `backend/.env` i `frontend/.env` i ručno testirati Google prijavu.
-36. Ponoviti vizuelnu proveru u pregledaču (Claude in Chrome) kada se alat oporavi, ili zamoliti korisnika da ručno prođe kroz signup/login/Kampanje/promenu lozinke na `http://127.0.0.1:5173`.
-37. Kada Docker Desktop bude dostupan, pokrenuti `docker compose up -d database`, primeniti `alembic upgrade head` i potvrditi da backend radi protiv pravog PostgreSQL-a.
+38. Kad korisnik prosledi Google OAuth Client ID, upisati ga u `backend/.env` i `frontend/.env` i ručno testirati Google prijavu. (Za sada preskočeno na zahtev korisnika.)
+39. Nastaviti ručno testiranje ostalih ekrana (Dashboard, Inbox, Kontakti, Prodajni levak, Kampanje, Integracije) na `http://127.0.0.1:5173` — korisnik testira ručno i prijavljuje nove greške, pošto Claude in Chrome alat ostaje neupotrebljiv.
+40. Korisnik će pokrenuti Docker Desktop; kad javi da je spreman, pokrenuti `docker compose up -d database`, primeniti `alembic upgrade head` i potvrditi da backend radi protiv pravog PostgreSQL-a.
