@@ -6,6 +6,8 @@
 .pipeline-stage { margin-top: 18px; }
 .integrations-grid .card { align-items: flex-start; gap: 14px; }
 .integrations-grid .configure-button { margin-top: 2px; }
+.integration-demo-banner { margin-bottom: 18px; padding: 14px 16px; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 10px; background: var(--soft); color: var(--text); font-size: 14px; line-height: 1.5; }
+.integration-demo-banner strong { color: var(--accent); }
 @media (max-width: 560px) { .inbox-form { align-items: stretch; flex-direction: column; } .inbox-form button { width: 100%; } }
 .contact-toolbar p.subtitle { margin: 0; color: var(--muted); font-size: 14px; }
 .campaign-row { grid-template-columns: 1.6fr .9fr 1.3fr .9fr 1fr 1fr; }
