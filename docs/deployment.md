@@ -1,5 +1,34 @@
 # Produkciona priprema (PostgreSQL, Docker, migracije)
 
+## Besplatan hosting (Neon + Render + Vercel)
+
+Preporučena kombinacija za beta verziju — sve tri usluge imaju trajno besplatan plan dovoljan za manji CRM. Naloge na sva tri servisa mora napraviti korisnik lično (prijava preko GitHub naloga, 1-2 minuta po servisu); dalje podešavanje (env promenljive, root direktorijum, build komande) može uraditi agent.
+
+### 1. Baza — [Neon](https://neon.tech) (PostgreSQL)
+
+1. Prijavi se na neon.tech preko GitHub naloga.
+2. Napravi novi projekat, npr. `crm-online-marketing`.
+3. Iz **Connection Details** kopiraj connection string (oblika `postgresql://user:password@host/dbname?sslmode=require`).
+4. Zameni `postgresql://` sa `postgresql+psycopg://` na početku (SQLAlchemy driver koji projekat koristi) — rezultat je vrednost za `DATABASE_URL`.
+
+### 2. Backend — [Render](https://render.com)
+
+1. Prijavi se na render.com preko GitHub naloga i odobri pristup repozitorijumu `crm-online-marketing`.
+2. **New + → Blueprint** i izaberi repozitorijum — Render će pronaći `render.yaml` u korenu repoa i sam predložiti web servis (`runtime: docker`, `backend/Dockerfile`, plan `free`).
+   - Ako se Blueprint ne ponudi: **New + → Web Service**, izaberi repo, **Root Directory** = `backend`, **Runtime** = Docker, plan **Free**.
+3. Popuni environment promenljive u Render panelu (vidi tabelu ispod) — bar `DATABASE_URL` (iz Neon-a) i `SECRET_KEY` (Render može sam generisati nasumičnu vrednost).
+4. Posle prvog uspešnog deploy-a, zapamti javnu adresu (oblika `https://crm-online-marketing-backend.onrender.com`) — to je backend API URL. Zdravlje servisa: `<ta-adresa>/api/v1/health`.
+5. Besplatan plan „uspava" servis posle ~15 minuta neaktivnosti — prvi sledeći zahtev ga budi za oko 30-50 sekundi. Ovo je prihvatljivo za beta/demo upotrebu, ne za produkciju sa stvarnim klijentima koji očekuju trenutan odgovor.
+
+### 3. Frontend — [Vercel](https://vercel.com)
+
+1. Prijavi se na vercel.com preko GitHub naloga.
+2. **Add New → Project**, izaberi repo `crm-online-marketing`.
+3. **Root Directory** = `frontend` (Vercel prepoznaje Vite podešavanja automatski — build komanda `npm run build`, izlazni direktorijum `dist`).
+4. Dodaj environment promenljivu `VITE_API_URL` = `<Render backend adresa>/api/v1` (npr. `https://crm-online-marketing-backend.onrender.com/api/v1`) pre prvog deploy-a — Vite promenljive se ugrađuju u build, pa izmena posle deploy-a zahteva novi build (Vercel to radi automatski na svaki push, ili ručno „Redeploy").
+5. Posle deploy-a, Vercel daje javnu adresu (oblika `https://crm-online-marketing.vercel.app`) — to je live link aplikacije.
+6. Vrati se u Render i dodaj tu Vercel adresu u `CORS_ORIGINS` promenljivu backend-a (inače će pregledač blokirati pozive sa frontend-a ka backend-u).
+
 ## Baza podataka
 
 Razvoj koristi lokalni SQLite fajl (`backend/crm.db`) podrazumevano. Za produkciju je pripremljen PostgreSQL preko `docker-compose.yml`.

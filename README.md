@@ -92,15 +92,12 @@ npm run build      # TypeScript provera + produkcioni build
 | `VITE_API_URL` | `frontend/.env` | Adresa backend API-ja. |
 | `VITE_GOOGLE_CLIENT_ID` | `frontend/.env` | Isti Google Client ID kao backend. |
 
-## Produkcija (PostgreSQL, Docker, Alembic)
+## Produkcija
 
-Detaljno uputstvo u [`docs/deployment.md`](docs/deployment.md). Ukratko:
+Dve opcije, obe detaljno opisane u [`docs/deployment.md`](docs/deployment.md):
 
-```
-docker compose up -d --build
-```
-
-pokreće PostgreSQL i backend kontejner (koji automatski primenjuje Alembic migracije pre starta).
+- **Besplatan hosting (Neon + Render + Vercel)** — preporučeno za beta verziju, live URL za par minuta po servisu. Repo sadrži `render.yaml` koji Render prepoznaje automatski.
+- **Sopstveni server (Docker)** — `docker compose up -d --build` pokreće PostgreSQL i backend kontejner (koji automatski primenjuje Alembic migracije pre starta).
 
 ## Struktura projekta
 
