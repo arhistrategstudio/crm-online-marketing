@@ -691,8 +691,6 @@ nav button svg {
 .integrations-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 14px; }
 .integrations-grid .card { align-items: flex-start; gap: 14px; }
 .configure-button { min-height: 42px; padding: 0 16px; border: 1px solid var(--accent); border-radius: var(--radius-inner); background: var(--accent); color: var(--text-primary); font-weight: 700; font-family: inherit; cursor: pointer; }
-.integration-demo-banner { margin-bottom: 18px; padding: 14px 16px; border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: var(--radius-inner); background: var(--soft); color: var(--text-primary); font-size: 14px; line-height: 1.5; }
-.integration-demo-banner strong { color: var(--accent); }
 .muted-line { display: block; margin-top: 2px; color: var(--text-secondary); font-size: 12px; font-weight: 500; }
 .campaign-row { grid-template-columns: 1.6fr .9fr 1.3fr .9fr 1fr 1fr; display: grid; gap: 12px; align-items: center; }
 .campaign-row .muted-line { display: block; margin-top: 2px; color: var(--text-secondary); font-size: 12px; font-weight: 500; }
@@ -702,11 +700,6 @@ nav button svg {
 .auth-error { color: #dc2626; font-size: 14px; margin-bottom: 12px; }
 .in { padding: 10px 16px; background: var(--row-bg); border-radius: var(--radius-inner); margin-bottom: 8px; font-size: 14px; }
 .out { padding: 10px 16px; background: var(--accent); border-radius: var(--radius-inner); margin-bottom: 8px; font-size: 14px; margin-left: 20%; }
-.user-chip { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 18px; padding: 12px; border-top: 1px solid var(--border); }
-.user-chip strong { display: block; font-size: 13px; }
-.user-chip span { display: block; color: var(--text-secondary); font-size: 11px; }
-.user-chip button { padding: 6px; border: 0; border-radius: 8px; background: transparent; color: var(--text-secondary); }
-.user-chip button:hover { background: var(--soft); color: var(--accent); }
 .contact-modal { display: flex; flex-direction: column; gap: 12px; }
 .contact-modal label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
 .contact-modal input { height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-inner); font-family: inherit; font-size: 14px; }
@@ -715,7 +708,6 @@ nav button svg {
 .command { display: inline-flex; align-items: center; gap: 7px; font-weight: 650; height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-inner); background: var(--card); color: var(--text-primary); font-family: inherit; font-size: 14px; cursor: pointer; }
 .command:hover { border-color: var(--accent); }
 .header-actions select { height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-inner); background: var(--card); color: var(--text-primary); font-family: inherit; font-size: 14px; cursor: pointer; }
-.demo-banner { margin-bottom: 24px; padding: 13px 16px; border: 1px solid #f0d7a7; border-radius: 12px; background: #fff9ed; color: #846526; font-size: 14px; }
 h2 { margin: 0 0 16px; font-size: 17px; }
 h1 { margin: 0; font-size: 31px; letter-spacing: -1px; }
 /* ===== End legacy aliases ===== */

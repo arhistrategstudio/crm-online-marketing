@@ -40,7 +40,7 @@ export function Integrations() {
 
   return (
     <>
-      <div className="integration-demo-banner">
+      <div className="demo-banner">
         <strong>Demo režim:</strong> status kanala ispod je simulacija. Dugme „Podesi"/„Isključi" samo menja zapis u bazi i ne
         uspostavlja pravu konekciju (OAuth/API) sa Facebook, Instagram, Viber ili Email nalogom.
       </div>
