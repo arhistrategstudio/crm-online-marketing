@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     meta_page_access_token: str | None = None
     meta_graph_api_version: str = "v21.0"
 
+    viber_auth_token: str | None = None
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def split_cors_origins(cls, value: object) -> object:

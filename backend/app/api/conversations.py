@@ -2,9 +2,11 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from app.config import Settings, get_settings
 from app.database import get_db
-from app.models import Conversation, Message
+from app.models import Channel, Conversation, Message
 from app.schemas.conversation import ConversationRead, MessageCreate, MessageRead
+from app.services.viber import send_message as send_viber_message
 
 
 router = APIRouter(prefix="/conversations", tags=["Inbox"])
@@ -34,10 +36,25 @@ def list_messages(conversation_id: int, db: Session = Depends(get_db)) -> list[M
 
 
 @router.post("/{conversation_id}/messages", response_model=MessageRead, status_code=status.HTTP_201_CREATED)
-def create_message(conversation_id: int, data: MessageCreate, db: Session = Depends(get_db)) -> Message:
-    conversation_or_404(conversation_id, db)
+def create_message(
+    conversation_id: int,
+    data: MessageCreate,
+    db: Session = Depends(get_db),
+    settings: Settings = Depends(get_settings),
+) -> Message:
+    conversation = conversation_or_404(conversation_id, db)
     message = Message(conversation_id=conversation_id, sender="agent", content=data.content)
     db.add(message)
     db.commit()
     db.refresh(message)
+
+    if conversation.channel == Channel.viber and settings.viber_auth_token and conversation.external_id:
+        try:
+            send_viber_message(conversation.external_id, data.content, settings.viber_auth_token)
+            message.status = "sent"
+        except Exception:  # noqa: BLE001 - keep the message saved even if the Viber API call fails
+            message.status = "failed"
+        db.commit()
+        db.refresh(message)
+
     return message

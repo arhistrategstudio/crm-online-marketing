@@ -12,6 +12,7 @@ from app.api import (
     integrations_router,
     leads_router,
     meetings_router,
+    viber_webhook_router,
     webhooks_router,
 )
 from app.config import get_settings
@@ -43,6 +44,7 @@ app.add_middleware(
 
 app.include_router(auth_router, prefix="/api/v1")
 app.include_router(webhooks_router, prefix="/api/v1")
+app.include_router(viber_webhook_router, prefix="/api/v1")
 
 protected = [Depends(get_current_user)]
 app.include_router(contacts_router, prefix="/api/v1", dependencies=protected)
