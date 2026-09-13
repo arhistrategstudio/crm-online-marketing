@@ -11,7 +11,8 @@ export function Settings() {
 
   const submit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const data = new FormData(form);
     const newPassword = String(data.get("new_password") || "");
     const confirmPassword = String(data.get("confirm_password") || "");
     if (newPassword !== confirmPassword) {
@@ -24,7 +25,7 @@ export function Settings() {
       const currentPassword = hasPassword ? String(data.get("current_password") || "") : null;
       await changePassword(currentPassword, newPassword);
       setStatus({ type: "success", text: "Lozinka je uspešno sačuvana." });
-      event.currentTarget.reset();
+      form.reset();
     } catch (err) {
       setStatus({ type: "error", text: (err as Error).message });
     } finally {
