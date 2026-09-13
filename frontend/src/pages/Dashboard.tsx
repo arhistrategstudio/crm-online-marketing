@@ -27,8 +27,11 @@ const demoContacts = [
   { name: "James Brown", sub: "IRA 25k", date: "29 Sep", status: "Qualified", statusClass: "status-yellow-green" },
 ];
 
+const calendarMonths = ["October 2025", "November 2025", "December 2025"];
+
 export function Dashboard() {
   const [summary, setSummary] = useState<Summary>(emptySummary);
+  const [monthIndex, setMonthIndex] = useState(1);
 
   useEffect(() => {
     apiFetch("/dashboard/summary")
@@ -100,9 +103,21 @@ export function Dashboard() {
           <div className="calendar-header">
             <h2>Upcoming Meetings</h2>
             <div className="calendar-nav">
-              <button><ChevronsLeft size={16} /></button>
-              <span className="calendar-month">November 2025</span>
-              <button><ChevronsRight size={16} /></button>
+              <button
+                type="button"
+                disabled={monthIndex === 0}
+                onClick={() => setMonthIndex((i) => Math.max(0, i - 1))}
+              >
+                <ChevronsLeft size={16} />
+              </button>
+              <span className="calendar-month">{calendarMonths[monthIndex]}</span>
+              <button
+                type="button"
+                disabled={monthIndex === calendarMonths.length - 1}
+                onClick={() => setMonthIndex((i) => Math.min(calendarMonths.length - 1, i + 1))}
+              >
+                <ChevronsRight size={16} />
+              </button>
             </div>
           </div>
           <div className="date-strip">

@@ -601,6 +601,15 @@ nav button svg {
   background: var(--border);
 }
 
+.calendar-nav button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.calendar-nav button:disabled:hover {
+  background: var(--row-bg);
+}
+
 .calendar-month {
   font-weight: 700;
   font-size: 15px;
@@ -738,6 +747,58 @@ nav button svg {
   color: var(--accent);
 }
 
+/* Modals (Command Palette, Contact/Campaign forms) */
+.modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+.command-menu {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 20px 60px rgba(17, 17, 17, 0.25);
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  max-height: 80vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.command-menu h2 {
+  margin-bottom: 8px;
+}
+
+.command-menu > button {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 11px 14px;
+  border: none;
+  border-radius: var(--radius-inner);
+  background: var(--row-bg);
+  color: var(--text-primary);
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.command-menu > button:hover {
+  background: var(--accent);
+}
+
 /* Demo banner */
 .demo-banner {
   background: var(--pastel-yellow);
@@ -807,7 +868,7 @@ nav button svg {
 .out { padding: 10px 16px; background: var(--accent); border-radius: var(--radius-inner); margin-bottom: 8px; font-size: 14px; margin-left: 20%; }
 .contact-modal { display: flex; flex-direction: column; gap: 12px; }
 .contact-modal label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
-.contact-modal input { height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-inner); font-family: inherit; font-size: 14px; }
+.contact-modal input, .contact-modal select { width: 100%; box-sizing: border-box; height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-inner); font-family: inherit; font-size: 14px; background: var(--card); color: var(--text-primary); }
 .contact-modal .form-actions { margin-top: 16px; }
 .contact-modal .form-actions button { min-height: 42px; padding: 0 24px; border: none; border-radius: var(--radius-inner); background: var(--accent); color: var(--text-primary); font-weight: 700; font-family: inherit; cursor: pointer; }
 .command { display: inline-flex; align-items: center; gap: 7px; font-weight: 650; height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-inner); background: var(--card); color: var(--text-primary); font-family: inherit; font-size: 14px; cursor: pointer; }
