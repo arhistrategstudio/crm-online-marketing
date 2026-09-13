@@ -1,0 +1,19 @@
+.inbox-form { display: flex; align-items: center; gap: 10px; margin-top: 22px; }
+.inbox-form input { flex: 1; min-width: 0; height: 42px; padding: 0 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--text); }
+.inbox-form button, .configure-button { min-height: 42px; padding: 0 16px; border: 1px solid var(--accent); border-radius: 10px; background: var(--accent); color: white; font-weight: 700; }
+.inbox-form button:hover, .configure-button:hover { filter: brightness(.94); }
+.pipeline-card select { display: block; min-width: 230px; margin-top: 10px; }
+.pipeline-stage { margin-top: 18px; }
+.integrations-grid .card { align-items: flex-start; gap: 14px; }
+.integrations-grid .configure-button { margin-top: 2px; }
+@media (max-width: 560px) { .inbox-form { align-items: stretch; flex-direction: column; } .inbox-form button { width: 100%; } }
+.contact-toolbar p.subtitle { margin: 0; color: var(--muted); font-size: 14px; }
+.campaign-row { grid-template-columns: 1.6fr .9fr 1.3fr .9fr 1fr 1fr; }
+.campaign-row .muted-line { display: block; margin-top: 2px; color: var(--muted); font-size: 12px; font-weight: 500; }
+@media (max-width: 850px) { .campaign-row { grid-template-columns: 1fr 1fr; } }
+.user-chip { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 18px; padding: 12px; border-top: 1px solid var(--line); }
+.user-chip strong { display: block; font-size: 13px; }
+.user-chip span { display: block; color: var(--muted); font-size: 11px; }
+.user-chip button { padding: 6px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); }
+.user-chip button:hover { background: var(--soft); color: var(--accent); }
+@media (max-width: 850px) { .user-chip span, .user-chip strong { display: none; } .user-chip { justify-content: center; } }

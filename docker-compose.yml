@@ -1,0 +1,32 @@
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: crm-online-marketing-db
+    environment:
+      POSTGRES_DB: crm_online_marketing
+      POSTGRES_USER: crm_user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "5432:5432"
+    volumes:
+      - crm_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U crm_user -d crm_online_marketing"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    container_name: crm-online-marketing-backend
+    env_file: .env
+    environment:
+      DATABASE_URL: postgresql+psycopg://crm_user:${POSTGRES_PASSWORD}@database:5432/crm_online_marketing
+    ports:
+      - "8000:8000"
+    depends_on:
+      database:
+        condition: service_healthy
+
+volumes:
+  crm_postgres_data:

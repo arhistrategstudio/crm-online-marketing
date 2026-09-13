@@ -1,0 +1,32 @@
+.contact-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.contact-toolbar .search {
+  margin-bottom: 0;
+}
+
+.contact-toolbar button {
+  height: 42px;
+  padding: 0 14px;
+  white-space: nowrap;
+  border: 1px solid var(--accent);
+  border-radius: 10px;
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+}
+
+@media (max-width: 560px) {
+  .contact-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .contact-toolbar .search {
+    width: 100%;
+  }
+}
