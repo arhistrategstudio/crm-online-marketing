@@ -1,5 +1,9 @@
 from app.models.base import Base
 from app.models.crm import (
+    ACTIVE_STAGES,
+    FOLLOWUP_STAGES,
+    LOST_STAGES,
+    WON_STAGES,
     Campaign,
     CampaignStatus,
     Channel,
@@ -7,14 +11,20 @@ from app.models.crm import (
     Conversation,
     Integration,
     Lead,
+    LeadActivity,
     LeadStage,
     Meeting,
     MetaLeadEvent,
     Message,
+    Proposal,
     User,
 )
 
 __all__ = [
+    "ACTIVE_STAGES",
+    "FOLLOWUP_STAGES",
+    "LOST_STAGES",
+    "WON_STAGES",
     "Base",
     "Campaign",
     "CampaignStatus",
@@ -23,9 +33,11 @@ __all__ = [
     "Conversation",
     "Integration",
     "Lead",
+    "LeadActivity",
     "LeadStage",
     "Meeting",
     "MetaLeadEvent",
     "Message",
+    "Proposal",
     "User",
 ]

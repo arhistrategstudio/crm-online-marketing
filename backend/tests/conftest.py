@@ -10,8 +10,8 @@ from app.models import Base
 
 
 @pytest.fixture()
-def anon_client():
-    """Provides a TestClient backed by an isolated in-memory SQLite database, without auth.
+def session_factory():
+    """Isolated in-memory SQLite engine shared by the API client and direct db assertions.
 
     Uses StaticPool so every session shares the same in-memory connection,
     and skips the app lifespan so the real dev database file is never touched.
@@ -23,9 +23,19 @@ def anon_client():
     )
     TestingSessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
     Base.metadata.create_all(bind=engine)
+    try:
+        yield TestingSessionLocal
+    finally:
+        Base.metadata.drop_all(bind=engine)
+        engine.dispose()
+
+
+@pytest.fixture()
+def anon_client(session_factory):
+    """Provides a TestClient backed by an isolated in-memory SQLite database, without auth."""
 
     def override_get_db():
-        db = TestingSessionLocal()
+        db = session_factory()
         try:
             yield db
         finally:
@@ -36,8 +46,6 @@ def anon_client():
         yield TestClient(app)
     finally:
         app.dependency_overrides.clear()
-        Base.metadata.drop_all(bind=engine)
-        engine.dispose()
 
 
 @pytest.fixture()

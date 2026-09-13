@@ -1,25 +1,25 @@
 import { FormEvent, useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
 import { ChevronsLeft, ChevronsRight, Plus } from "lucide-react";
-import { stageLabels } from "../types";
+import { DashboardSummary, stageLabels } from "../types";
 import { MeetingModal, MeetingContactOption } from "../components/MeetingModal";
 
-type Summary = {
-  new_inquiries: number;
-  active_leads: number;
-  offers_sent: number;
-  scheduled_paid: number;
-  campaigns_active: number;
-  avg_cost_per_lead: number | null;
-};
-
-const emptySummary: Summary = {
+const emptySummary: DashboardSummary = {
   new_inquiries: 0,
+  contacted: 0,
   active_leads: 0,
+  potential_value: 0,
+  closed_this_month_value: 0,
   offers_sent: 0,
+  proposals_sent: 0,
+  won: 0,
+  lost: 0,
+  win_rate: null,
+  avg_time_to_sale_days: null,
   scheduled_paid: 0,
   campaigns_active: 0,
   avg_cost_per_lead: null,
+  lost_reasons: [],
 };
 
 type Prospect = {
@@ -48,8 +48,14 @@ const dayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const stageStatusClass: Record<string, string> = {
   new_inquiry: "status-hot",
+  contacted: "status-qualified",
   offer_sent: "status-qualified",
+  negotiation: "status-yellow-green",
   waiting_response: "status-yellow-green",
+  deal_won: "status-scheduled",
+  scheduled: "status-scheduled",
+  paid: "status-scheduled",
+  deal_lost: "status-lost",
   scheduled_paid: "status-scheduled",
 };
 
@@ -91,7 +97,7 @@ function formatDate(iso: string): string {
 }
 
 export function Dashboard() {
-  const [summary, setSummary] = useState<Summary>(emptySummary);
+  const [summary, setSummary] = useState<DashboardSummary>(emptySummary);
   const [prospects, setProspects] = useState<Prospect[]>([]);
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date()));
   const [meetings, setMeetings] = useState<Meeting[]>([]);
@@ -150,8 +156,8 @@ export function Dashboard() {
   const metrics = [
     { label: "Novi upiti", value: summary.new_inquiries },
     { label: "Aktivni leadovi", value: summary.active_leads },
-    { label: "Ponude poslate", value: summary.offers_sent },
-    { label: "Zakazano / Plaćeno", value: summary.scheduled_paid },
+    { label: "Ponude poslate", value: summary.proposals_sent },
+    { label: "Dobijeni poslovi", value: summary.won },
   ];
 
   const today = new Date();
@@ -162,6 +168,20 @@ export function Dashboard() {
     <>
       <div className="demo-banner">
         <strong>Demo režim:</strong> Ovo je razvojno okruženje sa test podacima.
+      </div>
+      <div className="funnel-summary card">
+        <div className="funnel-metric">
+          <span className="metric-label">Aktivni leadovi</span>
+          <span className="metric-value">{summary.active_leads}</span>
+        </div>
+        <div className="funnel-metric">
+          <span className="metric-label">Potencijalna vrednost</span>
+          <span className="metric-value">{summary.potential_value.toLocaleString("sr-RS")} RSD</span>
+        </div>
+        <div className="funnel-metric">
+          <span className="metric-label">Zatvoreno ovog meseca</span>
+          <span className="metric-value">{summary.closed_this_month_value.toLocaleString("sr-RS")} RSD</span>
+        </div>
       </div>
       <div className="card metrics-card">
         <div className="metrics-card-header">
@@ -177,6 +197,34 @@ export function Dashboard() {
               </div>
             </div>
           ))}
+        </div>
+      </div>
+      <div className="card stats-card">
+        <h2>Statistika prodaje</h2>
+        <div className="stats-grid">
+          <div className="stat-item">
+            <span className="metric-label">Procenat zatvorenih poslova</span>
+            <span className="stat-value">{summary.win_rate != null ? `${summary.win_rate}%` : "—"}</span>
+          </div>
+          <div className="stat-item">
+            <span className="metric-label">Prosečno vreme do prodaje</span>
+            <span className="stat-value">
+              {summary.avg_time_to_sale_days != null ? `${summary.avg_time_to_sale_days} dana` : "—"}
+            </span>
+          </div>
+          <div className="stat-item">
+            <span className="metric-label">Izgubljeni poslovi</span>
+            <span className="stat-value">{summary.lost}</span>
+          </div>
+          <div className="stat-item stat-reasons">
+            <span className="metric-label">Razlozi gubitka</span>
+            {summary.lost_reasons.length === 0 && <span className="muted-line">Nema zabeleženih gubitaka.</span>}
+            {summary.lost_reasons.map((r) => (
+              <span className="stat-reason" key={r.reason}>
+                {r.reason} <strong>{r.count}</strong>
+              </span>
+            ))}
+          </div>
         </div>
       </div>
       <div className="bottom-row-wide">

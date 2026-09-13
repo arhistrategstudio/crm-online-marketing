@@ -11,6 +11,7 @@ class ContactCreate(BaseModel):
     email: EmailStr | None = None
     source: Channel = Channel.manual
     external_id: str | None = Field(default=None, max_length=255)
+    owner: str | None = Field(default=None, max_length=120)
     notes: str | None = None
 
 

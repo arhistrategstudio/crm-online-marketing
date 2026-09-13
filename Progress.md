@@ -177,3 +177,50 @@ Ovaj fajl je dnevnik rada na projektu. Posle svakog završenog koraka dopunjuje 
 102. `backend/.venv_broken` treba obrisati kad se oslobodi (verovatno tek posle restarta Windows-a) — trenutno gitignore-ovan pa ne smeta.
 103. Portovi 8000, 8010, 8020 — svi zaglavljeni; backend sada radi na **8030**, restartovan isključivo preko `taskkill /F /T /PID <pid>` (vidi [[env-stuck-port]] memoriju). Ako se i 8030 zaglavi, preći na sledeći port i uvek koristiti `/T` flag pri restartu.
 104. Claude in Chrome radi (potvrđeno i korišćeno u ovoj sesiji za Meta App setup) — prethodne napomene o "Script injection timed out" više ne važe za trenutno stanje.
+
+## Nove instrukcije (korak 108) — unapređenje CRM levka
+
+Prva verzija aplikacije je završena i uspešno deployovana (Neon + Render + Vercel, živi sajt: https://crm-online-marketing.vercel.app, repo: https://github.com/arhistrategstudio/crm-online-marketing). Korisnik je poslao sledeći set zahteva za unapređenje (implementacija u toku):
+
+**1. Kartica klijenta / lead-a** — naziv firme ili osobe, telefon, mejl, izvor upita, odgovorna osoba, vrednost potencijalnog posla i kratka beleška. Klikom na karticu otvara se cela istorija komunikacije.
+
+**2. Sledeća aktivnost i podsetnik** — npr. „Pozvati 15.09.", „Poslati ponudu", „Follow-up za 3 dana". Najvažnija funkcija jer CRM bez podsetnika postaje samo evidencija.
+
+**3. Više faza prodaje** — umesto četiri: Novi upit → Kontaktiran → Poslata ponuda → Pregovori → Čekamo odgovor → Dobijen posao → Izgubljen posao. „Zakazano" i „Plaćeno" razdvojiti jer zakazan i plaćen posao nisu isto.
+
+**4. Drag & drop između kolona** — prevlačenje kartice klijenta iz jedne faze u drugu.
+
+**5. Vrednost prodajnog levka na vrhu** — npr. „23 aktivna lead-a / potencijalna vrednost 18.400 € / ovog meseca zatvoreno 6.200 €".
+
+**6. Izvor lead-a** — Instagram, Facebook Ads, Google, preporuka, telefon, sajt itd. — da se vidi odakle stvarno dolaze klijenti.
+
+**7. Automatski follow-up** — ako je ponuda poslata i nema odgovora 3 ili 5 dana, sistem upozori prodavca ili pripremi poruku.
+
+**8. Inbox povezan sa klijentom** — svaka WhatsApp/SMS/email konverzacija automatski vezana za konkretnog lead-a, bez traženja po porukama.
+
+**9. Ponude direktno iz CRM-a** — dugme „Kreiraj ponudu", unos cene/usluge, generisanje PDF-a i beleženje datuma slanja.
+
+**10. Dashboard / statistika** — broj novih upita, broj poslatih ponuda, procenat zatvorenih poslova, prosečno vreme do prodaje, izgubljeni poslovi i razlog gubitka.
+
+**11. UI izmena za ekran levka** — ukloniti/ozbiljno ublažiti veliki zeleno-crveni gradijent (trenutno zauzima ~80% ekrana bez informacione vrednosti); kartice lead-ova prikazati na mirnoj, neutralnoj pozadini.
+
+### 109. Implementacija zahteva iz koraka 108 (CRM unapređenja)
+
+**Backend:**
+- `LeadStage` proširen: `new_inquiry → contacted → offer_sent → negotiation → waiting_response → deal_won → scheduled → paid → deal_lost` (uz zadržanu legacy vrednost `scheduled_paid` radi kompatibilnosti postojećih redova). `Channel` (izvor) proširen: `google`, `referral`, `phone`, `website`.
+- `Contact` dobio polje `owner` (odgovorna osoba). `Lead` dobio `lost_reason`, `next_activity`, `next_activity_at` (podsetnik). `Message` dobio `created_at`.
+- Novi modeli: `Proposal` (ponuda: naziv, iznos, valuta, stavke, napomena, status, `sent_at`) i `LeadActivity` (audit trag komunikacije: note/call/email/stage_change/proposal).
+- `app/api/leads.py` prerađen: list/get sada vraćaju spojene podatke o kontaktu (telefon, mejl, izvor, vlasnik, beleška) + `followup_due`, `proposals_count`, `last_proposal_at`; novi endpointi `GET /leads/followups` (ponuda poslata bez odgovora N dana), `GET/POST /leads/{id}/activities`, `GET/POST /leads/{id}/proposals` (kreiranje ponude automatski prebacuje lead u `offer_sent`, beleži `sent_at` i zakazuje follow-up podsetnik za 3 dana), `GET /leads/{id}/history` (spojena hronologija poruka + aktivnosti + ponuda). Promena faze i kreiranje ponude automatski upisuju `LeadActivity`.
+- `app/api/dashboard.py`: `/dashboard/summary` sada vraća i vrednost levka (aktivni leadovi, potencijalna vrednost, zatvoreno ovog meseca), broj poslatih ponuda, dobitke/gubitke, procenat zatvorenih poslova, prosečno vreme do prodaje i razloge gubitka. `/dashboard/notifications` uključuje i podsetnike (`next_activity_at`).
+- Alembic migracija `c3d4e5f6a7b8_expand_leads_and_proposals.py` (Postgres: `ALTER TYPE ... ADD VALUE IF NOT EXISTS` + nove kolone/tabele; provereno da se čisto primenjuje na praznu SQLite bazu). CI testovi: dodati `tests/test_lead_features.py` (7 testova) i refaktorisan `conftest.py` (`session_factory`). **Svih 68 testova prolazi.**
+
+**Frontend:**
+- `types/index.ts`: 9 faza levka, mapiranje labela/ključeva, `leadSources`, prošireni `LeadItem`, `ProposalItem`, `TimelineItem`, `DashboardSummary`.
+- `Pipeline.tsx` potpuno prerađen: „Sales funnel" traka na vrhu (aktivni leadovi / potencijalna vrednost / zatvoreno ovog meseca / broj follow-up-a), kanban sa 9 kolona (horizontalno skrolovanje) i **drag & drop** između kolona (nativni HTML5 DnD, optimistic update + PUT /leads/{id}), kartice prikazuju telefon/izvor/vlasnika/sledeću aktivnost i upozorenje za follow-up.
+- Novi `LeadDrawer.tsx`: klik na karticu otvara celu istoriju komunikacije (vremenska linija poruka/aktivnosti/ponuda) + kontakt podaci, izmena faze/vrednosti/podsetnika/odgovorne osobe/beleške/razloga gubitka, lista ponuda sa PDF-om i dugme „Pripremi poruku" za follow-up.
+- Novi `ProposalModal.tsx`: unos cene/usluge → `POST /leads/{id}/proposals` → generisanje PDF-a preko štampe pregledača (`window.print`, bez dodatnih zavisnosti).
+- `Dashboard.tsx`: dodata funnel traka i kartica „Statistika prodaje" (procenat zatvorenih, prosečno vreme do prodaje, izgubljeni poslovi i razlozi gubitka); metrike ažurirane na stvarne brojke.
+- `Contacts.tsx`/`ContactModal.tsx`: prikaz i unos izvora, odgovorne osobe, mejla i beleške.
+- `styles.css`: veliki zeleno-crveni gradijent zamenjen mirnom neutralnom pozadinom (suptilan radijalni akcent), dodat stil za funnel/kanban/drawer/timeline/statistiku.
+- `npm run build` prolazi bez grešaka. Ručna provera u pregledaču nije rađena automatski (Claude in Chrome) — preporučena provera korisnika.
+- Lokalna razvojna SQLite baza (`backend/crm.db`) je ručno dopunjena novim kolonama/tabelama (bez brisanja postojećih podataka) da bi stari demo podaci nastavili da rade.

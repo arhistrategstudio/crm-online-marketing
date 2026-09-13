@@ -16,7 +16,7 @@ class ProspectRead(BaseModel):
 
 
 class NotificationItem(BaseModel):
-    type: Literal["message", "lead"]
+    type: Literal["message", "lead", "reminder"]
     text: str
     reference_id: int
     created_at: datetime
@@ -25,3 +25,26 @@ class NotificationItem(BaseModel):
 class NotificationFeed(BaseModel):
     count: int
     items: list[NotificationItem]
+
+
+class LostReasonItem(BaseModel):
+    reason: str
+    count: int
+
+
+class DashboardSummary(BaseModel):
+    new_inquiries: int
+    contacted: int
+    active_leads: int
+    potential_value: int
+    closed_this_month_value: int
+    offers_sent: int
+    proposals_sent: int
+    won: int
+    lost: int
+    win_rate: float | None
+    avg_time_to_sale_days: float | None
+    scheduled_paid: int
+    campaigns_active: int
+    avg_cost_per_lead: float | None
+    lost_reasons: list[LostReasonItem]

@@ -3,7 +3,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session, selectinload
 
 from app.database import get_db
-from app.models import Campaign, LeadStage
+from app.models import Campaign, WON_STAGES
 from app.schemas.campaign import CampaignCreate, CampaignRead, CampaignUpdate
 
 
@@ -15,7 +15,7 @@ def serialize_campaign(campaign: Campaign) -> CampaignRead:
     leads = campaign.leads
     leads_count = len(leads)
     cost_per_lead = round(campaign.spend / leads_count, 2) if leads_count else None
-    won_count = sum(1 for lead in leads if lead.stage == LeadStage.scheduled_paid)
+    won_count = sum(1 for lead in leads if lead.stage in WON_STAGES)
     conversion_rate = round(won_count / leads_count * 100, 1) if leads_count else None
     return CampaignRead.model_validate(
         {

@@ -29,3 +29,4 @@ class MessageRead(BaseModel):
     sender: str
     content: str
     status: str
+    created_at: datetime

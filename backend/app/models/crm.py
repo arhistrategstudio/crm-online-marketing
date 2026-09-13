@@ -13,13 +13,42 @@ class Channel(str, Enum):
     viber = "viber"
     email = "email"
     manual = "manual"
+    google = "google"
+    referral = "referral"
+    phone = "phone"
+    website = "website"
 
 
 class LeadStage(str, Enum):
     new_inquiry = "new_inquiry"
+    contacted = "contacted"
     offer_sent = "offer_sent"
+    negotiation = "negotiation"
     waiting_response = "waiting_response"
+    deal_won = "deal_won"
+    scheduled = "scheduled"
+    paid = "paid"
+    deal_lost = "deal_lost"
+    # Legacy value kept so existing rows stay valid after the pipeline expansion.
     scheduled_paid = "scheduled_paid"
+
+
+ACTIVE_STAGES = frozenset(
+    {
+        LeadStage.new_inquiry,
+        LeadStage.contacted,
+        LeadStage.offer_sent,
+        LeadStage.negotiation,
+        LeadStage.waiting_response,
+    }
+)
+WON_STAGES = frozenset(
+    {LeadStage.deal_won, LeadStage.scheduled, LeadStage.paid, LeadStage.scheduled_paid}
+)
+LOST_STAGES = frozenset({LeadStage.deal_lost})
+FOLLOWUP_STAGES = frozenset(
+    {LeadStage.offer_sent, LeadStage.negotiation, LeadStage.waiting_response}
+)
 
 
 class CampaignStatus(str, Enum):
@@ -52,6 +81,7 @@ class Contact(Base, TimestampMixin):
     source: Mapped[Channel] = mapped_column(SqlEnum(Channel), default=Channel.manual)
     external_id: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
     status: Mapped[str] = mapped_column(String(30), default="Aktivan")
+    owner: Mapped[str | None] = mapped_column(String(120), nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)
     conversations: Mapped[list["Conversation"]] = relationship(back_populates="contact")
     lead: Mapped["Lead | None"] = relationship(back_populates="contact", uselist=False)
@@ -77,6 +107,7 @@ class Message(Base):
     sender: Mapped[str] = mapped_column(String(30))
     content: Mapped[str] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(30), default="sent")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
     conversation: Mapped[Conversation] = relationship(back_populates="messages")
 
 
@@ -88,8 +119,40 @@ class Lead(Base, TimestampMixin):
     campaign_id: Mapped[int | None] = mapped_column(ForeignKey("campaigns.id"), nullable=True, index=True)
     stage: Mapped[LeadStage] = mapped_column(SqlEnum(LeadStage), default=LeadStage.new_inquiry)
     value: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    lost_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    next_activity: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    next_activity_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True, index=True)
     contact: Mapped[Contact] = relationship(back_populates="lead")
     campaign: Mapped["Campaign | None"] = relationship(back_populates="leads")
+    proposals: Mapped[list["Proposal"]] = relationship(back_populates="lead", cascade="all, delete-orphan")
+    activities: Mapped[list["LeadActivity"]] = relationship(back_populates="lead", cascade="all, delete-orphan")
+
+
+class Proposal(Base, TimestampMixin):
+    __tablename__ = "proposals"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lead_id: Mapped[int] = mapped_column(ForeignKey("leads.id"), index=True)
+    contact_id: Mapped[int] = mapped_column(ForeignKey("contacts.id"), index=True)
+    title: Mapped[str] = mapped_column(String(200))
+    amount: Mapped[int] = mapped_column(Integer, default=0)
+    currency: Mapped[str] = mapped_column(String(10), default="RSD")
+    items: Mapped[str | None] = mapped_column(Text, nullable=True)
+    notes: Mapped[str | None] = mapped_column(Text, nullable=True)
+    status: Mapped[str] = mapped_column(String(30), default="sent")
+    sent_at: Mapped[datetime | None] = mapped_column(DateTime, nullable=True)
+    lead: Mapped[Lead] = relationship(back_populates="proposals")
+
+
+class LeadActivity(Base, TimestampMixin):
+    __tablename__ = "lead_activities"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    lead_id: Mapped[int] = mapped_column(ForeignKey("leads.id"), index=True)
+    type: Mapped[str] = mapped_column(String(30), default="note")
+    description: Mapped[str] = mapped_column(Text)
+    created_by: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    lead: Mapped[Lead] = relationship(back_populates="activities")
 
 
 class Integration(Base, TimestampMixin):

@@ -1,4 +1,5 @@
 import { FormEvent } from "react";
+import { leadSources } from "../types";
 
 export function ContactModal({
   onClose,
@@ -22,6 +23,22 @@ export function ContactModal({
         <label>
           Email
           <input name="email" type="email" placeholder="ime@primer.rs" />
+        </label>
+        <label>
+          Izvor upita
+          <select name="source" defaultValue="manual">
+            {leadSources.map((s) => (
+              <option key={s.value} value={s.value}>{s.label}</option>
+            ))}
+          </select>
+        </label>
+        <label>
+          Odgovorna osoba
+          <input name="owner" placeholder="Ime prodavca" />
+        </label>
+        <label>
+          Kratka beleška
+          <textarea name="notes" rows={2} placeholder="Beleška o klijentu..." />
         </label>
         <div className="form-actions">
           <button type="button" onClick={onClose}>Otkaži</button>

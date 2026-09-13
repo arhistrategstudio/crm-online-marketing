@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useState } from "react";
 import { apiFetch } from "../lib/api";
-import { ContactItem } from "../types";
+import { ContactItem, channelLabels } from "../types";
 import { ContactModal } from "../components/ContactModal";
 
 export function Contacts() {
@@ -12,11 +12,33 @@ export function Contacts() {
     const suffix = search.trim() ? `?search=${encodeURIComponent(search.trim())}` : "";
     apiFetch(`/contacts${suffix}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((items: { id: number; name: string; source: string; phone: string | null; status: string }[]) => {
-        setContacts(
-          items.map((c) => ({ id: c.id, name: c.name, source: c.source, phone: c.phone || "Nije unet", status: c.status })),
-        );
-      })
+      .then(
+        (
+          items: {
+            id: number;
+            name: string;
+            source: string;
+            phone: string | null;
+            email: string | null;
+            owner: string | null;
+            notes: string | null;
+            status: string;
+          }[],
+        ) => {
+          setContacts(
+            items.map((c) => ({
+              id: c.id,
+              name: c.name,
+              source: c.source,
+              phone: c.phone || "Nije unet",
+              email: c.email,
+              owner: c.owner,
+              notes: c.notes,
+              status: c.status,
+            })),
+          );
+        },
+      )
       .catch(() => undefined);
   };
 
@@ -36,7 +58,9 @@ export function Contacts() {
         name,
         phone: String(data.get("phone") || "").trim() || null,
         email: String(data.get("email") || "").trim() || null,
-        source: "manual",
+        source: String(data.get("source") || "manual"),
+        owner: String(data.get("owner") || "").trim() || null,
+        notes: String(data.get("notes") || "").trim() || null,
       }),
     });
     if (!response.ok) {
@@ -58,7 +82,9 @@ export function Contacts() {
           <div className="row" key={c.id}>
             <strong>{c.name}</strong>
             <span>{c.phone}</span>
-            <span>{c.source}</span>
+            <span>{c.email || "Bez mejla"}</span>
+            <span>{channelLabels[c.source] || c.source}</span>
+            <span>{c.owner || "Bez zaduženja"}</span>
             <span className="badge">{c.status}</span>
           </div>
         ))}
