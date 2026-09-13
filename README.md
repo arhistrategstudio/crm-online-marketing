@@ -2,16 +2,33 @@
 
 CRM za marketing agencije i vlasnike biznisa koji prikupljaju upite sa **Facebooka, Instagrama, Vibera i email-a**, prate ih kroz prodajni levak i mere efikasnost reklamnih kampanja.
 
+## Status projekta — Beta v1
+
+Sve funkcionalnosti ispod rade nad **stvarnim podacima iz baze** (nema tvrdo upisanih/demo prikaza u interfejsu) i pokrivene su automatskim testovima (61 backend test). Ono što namerno **nije** uključeno u ovu verziju je jasno označeno.
+
+| Ekran / funkcija | Stanje |
+|---|---|
+| Dashboard (KPI, kalendar sastanaka, pretraga, obaveštenja) | ✅ Gotovo |
+| Inbox (lista razgovora, poruke po kanalu) | ✅ Gotovo |
+| Kontakti (pretraga, dodavanje, sprečavanje duplikata) | ✅ Gotovo |
+| Prodajni levak (kanban po fazama) | ✅ Gotovo |
+| Kampanje (CRUD, KPI po kampanji) | ✅ Gotovo |
+| Podešavanja (profil, promena lozinke) | ✅ Gotovo |
+| Prijava (email/lozinka + Google) | ✅ Gotovo |
+| Meta (Facebook/Instagram) Lead Ads webhook | ⚙️ Kod gotov i testiran, **namerno diskonektovan** — čeka ispravan Page Access Token (vidi `docs/integrations.md`) |
+| Viber Bot API | ⚙️ Kod gotov i testiran, **namerno diskonektovan** — čeka da korisnik lično poveže Viber Public Account (vidi `docs/integrations.md`) |
+| Produkcioni hosting (javno dostupan URL) | ❌ Aplikacija trenutno radi samo lokalno; nije još postavljena na hosting (vidi `docs/deployment.md`) |
+
 ## Funkcionalnosti
 
-- **Dashboard** — pregled novih upita, aktivnih leadova, poslatih ponuda i efikasnosti kampanja (cena po leadu, broj aktivnih kampanja).
-- **Inbox** — razgovori i poruke po kanalu (Facebook, Instagram, Viber, Email).
-- **Kontakti** — evidencija kontakata sa pretragom i sprečavanjem duplikata (telefon/email/spoljni ID).
-- **Prodajni levak** — faze leada od upita do naplate.
+- **Dashboard** — pregled novih upita, aktivnih leadova, poslatih ponuda i efikasnosti kampanja (cena po leadu, broj aktivnih kampanja), pravi kalendar predstojećih sastanaka, pretraga kontakata i obaveštenja u zaglavlju.
+- **Inbox** — lista svih razgovora po kanalu (Facebook, Instagram, Viber, Email) sa pregledom poslednje poruke i brojem nepročitanih, i thread za slanje/prijem poruka.
+- **Kontakti** — evidencija kontakata sa pretragom (na serveru) i sprečavanjem duplikata (telefon/email/spoljni ID).
+- **Prodajni levak** — kanban prikaz leadova po fazama, od upita do naplate, sa promenom faze jednim klikom.
 - **Kampanje** — praćenje reklamnih kampanja po kanalu, sa automatskim povezivanjem leadova i KPI (cena po leadu, procenat konverzije).
-- **Integracije** — status povezanosti Facebook/Instagram/Viber/Email kanala.
+- **Integracije** — status povezanosti Facebook/Instagram/Viber/Email kanala; Meta Lead Ads i Viber imaju gotov backend kod (vidi tabelu iznad i `docs/integrations.md`).
 - **Nalog i prijava** — registracija i prijava email-om/lozinkom ili Google nalogom (Google Identity Services), promena lozinke u Podešavanjima.
-- Svetla/tamna tema, izbor akcentne boje, komandna paleta (`Ctrl/Cmd + K`).
+- Svetla estetika (Plus Jakarta Sans, gradient pozadina), komandna paleta (`Ctrl/Cmd + K`).
 
 ## Tehnologije
 
@@ -90,14 +107,15 @@ pokreće PostgreSQL i backend kontejner (koji automatski primenjuje Alembic migr
 ```
 backend/
   app/
-    api/        - FastAPI rute (auth, contacts, conversations, leads, campaigns, integrations, dashboard)
+    api/        - FastAPI rute (auth, contacts, conversations, leads, campaigns, integrations, meetings, dashboard, webhooks)
+    services/   - integracije sa spoljnim API-jima (Meta Graph API, Viber Bot API)
     models/     - SQLAlchemy modeli
     schemas/    - Pydantic šeme
     config.py   - podešavanja iz environment promenljivih
     security.py - heširanje lozinke, JWT, auth dependency
     seed.py     - demo podaci za razvoj
   alembic/      - migracije baze
-  tests/        - pytest testovi
+  tests/        - pytest testovi (61 test)
 frontend/
   src/
     components/ - Shell, modali, komandna paleta
