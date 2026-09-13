@@ -1,4 +1,5 @@
 import { FormEvent, useState } from "react";
+import { Phone } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import { GoogleButton } from "../components/GoogleButton";
 
@@ -20,9 +21,12 @@ export function Login({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
   };
 
   return (
-    <main className="auth-shell">
+    <main className="auth-page">
       <section className="auth-card">
-        <p className="brand">CRM<span>+</span></p>
+        <div className="brand">
+          <div className="brand-icon"><Phone size={16} fill="white" /></div>
+          Called
+        </div>
         <p className="subtitle">Prijavite se na svoj nalog</p>
         {error && <p className="auth-error">{error}</p>}
         <form onSubmit={submit}>

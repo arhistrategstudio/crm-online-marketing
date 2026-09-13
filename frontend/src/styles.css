@@ -897,4 +897,43 @@ h1 { margin: 0; font-size: 31px; letter-spacing: -1px; }
 .lead-card select { padding: 6px 10px; border: 1px solid var(--border); border-radius: var(--radius-inner); font-family: inherit; font-size: 13px; background: var(--card); color: var(--text-primary); }
 @media (max-width: 1024px) { .pipeline-board { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 600px) { .pipeline-board { grid-template-columns: 1fr; } }
+
+/* ===== Prijava / Registracija ===== */
+.auth-page {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.auth-page::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #2dd4a8 0%, #1a8a6e 25%, #e84830 75%, #ff6b35 100%);
+  z-index: -1;
+}
+.auth-card {
+  width: 100%;
+  max-width: 380px;
+  background: var(--card);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-wide);
+  border: 1px solid var(--border);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.auth-card .subtitle { margin: -8px 0 0; color: var(--text-secondary); font-size: 14px; }
+.auth-card form { display: flex; flex-direction: column; gap: 12px; }
+.auth-card label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; font-weight: 600; color: var(--text-secondary); }
+.auth-card input { height: 42px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-inner); font-family: inherit; font-size: 14px; background: var(--card); color: var(--text-primary); }
+.auth-card form button[type="submit"] { min-height: 42px; margin-top: 4px; border: none; border-radius: var(--radius-inner); background: var(--accent); color: var(--text-primary); font-weight: 700; font-family: inherit; cursor: pointer; }
+.auth-divider { text-align: center; color: var(--text-secondary); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+.auth-switch { text-align: center; font-size: 13px; color: var(--text-secondary); }
+.auth-switch button { background: none; border: none; color: var(--text-primary); font-weight: 700; font-family: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
+.google-button { display: flex; justify-content: center; }
 /* ===== End legacy aliases ===== */
