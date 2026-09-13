@@ -42,8 +42,11 @@ Ovaj fajl je dnevnik rada na projektu. Posle svakog završenog koraka dopunjuje 
 31. Vizuelna provera u pregledaču (Claude in Chrome) nije mogla da se izvrši u ovoj sesiji — alat je dosledno vraćao grešku „Script injection timed out" čak i na `example.com`, što ukazuje na privremeni problem sa ekstenzijom, ne sa aplikacijom. Backend je u potpunosti proveren preko `curl` (signup/login/me/change-password/campaigns/dashboard) i pytest-a; frontend `npm run build` prolazi bez grešaka. Ručna provera u pravom pregledaču je preporučena kad se browser alat oporavi.
 32. Pripremljena je GitHub struktura: `LICENSE` (MIT), `.editorconfig`, `.github/workflows/ci.yml` (backend pytest + frontend build), `CONTRIBUTING.md`, prošireni `docs/` (novi `auth.md`, `deployment.md`, ažurirani `architecture.md`/`integrations.md`/`api.md`), pun `README.md`, i `.gitignore` dopunjen sa `*.db`/`*.tsbuildinfo`.
 
+33. Projekat je postavljen na GitHub: `git init`, prvi commit i push preko `gh repo create` na **https://github.com/arhistrategstudio/crm-online-marketing** (javan repo, MIT licenca). `.github/workflows/ci.yml` NIJE pushovan — GitHub CLI token nema `workflow` OAuth scope pa je GitHub odbio taj fajl; fajl ostaje lokalno i biće dodat naknadno (vidi Sledeće).
+
 ## Sledeće
 
-33. Kad korisnik prosledi Google OAuth Client ID, upisati ga u `backend/.env` i `frontend/.env` i ručno testirati Google prijavu.
-34. Ponoviti vizuelnu proveru u pregledaču (Claude in Chrome) kada se alat oporavi, ili zamoliti korisnika da ručno prođe kroz signup/login/Kampanje/promenu lozinke na `http://127.0.0.1:5173`.
-35. Kada Docker Desktop bude dostupan, pokrenuti `docker compose up -d database`, primeniti `alembic upgrade head` i potvrditi da backend radi protiv pravog PostgreSQL-a.
+34. Odobriti `workflow` scope GitHub CLI tokenu (`gh auth refresh -h github.com -s workflow` — traži da se otvori `https://github.com/login/device` i unese kod ispisan u terminalu, to mora korisnik ručno da uradi), pa zatim `git add .github/workflows/ci.yml`, commit i push da CI proradi.
+35. Kad korisnik prosledi Google OAuth Client ID, upisati ga u `backend/.env` i `frontend/.env` i ručno testirati Google prijavu.
+36. Ponoviti vizuelnu proveru u pregledaču (Claude in Chrome) kada se alat oporavi, ili zamoliti korisnika da ručno prođe kroz signup/login/Kampanje/promenu lozinke na `http://127.0.0.1:5173`.
+37. Kada Docker Desktop bude dostupan, pokrenuti `docker compose up -d database`, primeniti `alembic upgrade head` i potvrditi da backend radi protiv pravog PostgreSQL-a.
