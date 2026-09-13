@@ -74,9 +74,22 @@ Ovaj fajl je dnevnik rada na projektu. Posle svakog završenog koraka dopunjuje 
 
 49. Korisnik je pokušao da otvre `http://127.0.0.1:5173` ali dobio „This site can't be reached / 127.0.0.1 refused to connect" jer je prethodni `Get-Process | Stop-Process` ubio sve node procese uključujući Vite dev server. Pokrenut je ponovo sa `npx vite --host 127.0.0.1 --port 5173` i frontend radi. Backend je i dalje aktivan na portu 8010 (PID 31560).
 
+50. **Napomena o paralelnom radu:** ovaj redizajn (koraci 47-49) je nastao u drugoj, paralelnoj sesiji/prozoru dok je u ovoj sesiji bio u toku korak 46 (Integracije demo UX) — grana `redesign-ui` se pojavila i dobila commit `90810e9` bez akcije ove sesije. Korisnik je potvrdio (kad mu je ovo skrenuta pažnja) da se nastavi rad na `redesign-ui` grani u ovoj sesiji.
+51. Pregledom `redesign-ui` grane protiv referentne Dribbble slike (`VizualUI.jpeg`) pronađene su i ispravljene greške koje su kvarile vernost dizajnu (commit `e2e33fc`):
+    - `.demo-banner` i `.user-chip` su imali duplirana/konfliktna CSS pravila (iz stare "legacy" faze) koja su tiho prepisivala ispravan izgled preko CSS kaskade.
+    - `frontend/src/workflow-controls.css` nikad nije bio uvezen (main.tsx uvozi samo `styles.css`) — obrisan je jer je mrtav kod, u potpunosti zamenjen "legacy aliases" sekcijom u `styles.css`.
+    - `Integrations.tsx` je promenio klasu banera na deljenu `.demo-banner` (ranije korišćena `.integration-demo-banner` je koristila nepostojeću `var(--soft)`, pa nije imala pozadinsku boju).
+52. Dodatno doterivanje vernosti referenci (novi commit, još nije pushovan):
+    - `Dashboard.tsx`/`styles.css`: 4 metrike su spojene u JEDNU karticu „My Performance Over Time" sa datumskim podnaslovom i razdvajačem, umesto 4 odvojene kartice (tačnije odgovara referenci).
+    - „Prospects to Watch": dodat datumski podnaslov i labele „Last Contacted"/„Status" iznad svake vrednosti po redu.
+    - „Upcoming Meetings": nedostajao je ceo red sa danima u nedelji (Mon–Sun) — mapiranje je ranije generisalo samo brojeve (i to prazne osim za Thu), sada se prikazuju i skraćenice dana i brojevi (6–12), sa četvrtkom (9) markiranim kao aktivan; dodata je i „Today" labela iznad liste sastanaka.
+    - `Shell.tsx`: dodati su avatar krugovi sa inicijalima korisnika (sidebar i topbar) — topbar je ranije prikazivao tvrdo upisano „Mike Taylor / mike@example.com" umesto pravog ulogovanog korisnika; sada prikazuje avatar sa inicijalima + chevron, bliže referenci. Brand ikona (📞 emoji) zamenjena je lucide `Phone` ikonicom radi doslednijeg renderovanja.
+    - `npm run build` prolazi bez grešaka nakon svake izmene (TypeScript + Vite).
+    - Vizuelna provera u pregledaču (Claude in Chrome) nije bila moguća — ekstenzija dosledno vraća „Script injection timed out"/„Couldn't determine target page" i na `dribbble.com` i na lokalnom `127.0.0.1:5173`; sistem je bio pri kraju sa RAM memorijom (~1.3–1.9 GB slobodno od 16 GB) tokom cele sesije, isti obrazac kao ranije (koraci 31/37/38).
+
 ## Sledeće
 
-50. Korisnik treba da otvori `http://127.0.0.1:5173` u pregledaču da vidi novi dizajn i odobri ga pre nego što se commituje i pushuje na GitHub.
-51. Nakon odobrenja — komitovati sve promene na grani `redesign-ui` i pushovati na GitHub.
-52. Port 8000 — i dalje zaglavljen; za sada 8010 stabilno rešenje. Potrebno `wsl --shutdown` + restart Docker Desktop-a ili Windows-a za oslobađanje.
-53. Nakon završetka svih koraka, vratiti se na vizuelnu estetiku UI-ja (korisnik je to izričito tražio da se uradi na kraju) — korisnik će poslati link sa primerom željenog izgleda da se identično prekopira i primeni.
+53. Korisnik treba da otvori `http://127.0.0.1:5173` u pregledaču (ručno, pošto Claude in Chrome ne radi u ovoj sesiji) da vizuelno uporedi Dashboard sa `VizualUI.jpeg` i odobri pre commit/push-a.
+54. Nakon odobrenja — komitovati preostale promene (ako ih ima) na grani `redesign-ui`, spojiti u `main` (ili pushovati `redesign-ui` direktno, po dogovoru) i pushovati na GitHub.
+55. Port 8000 — i dalje zaglavljen; za sada 8010 stabilno rešenje. Potrebno `wsl --shutdown` + restart Docker Desktop-a ili Windows-a za oslobađanje.
+56. Ako se RAM problem nastavi, razmotriti restart Windows-a — trenutno slobodna memorija (~1.3 GB od 16 GB) je verovatno uzrok i sporog build-a (jedan build je trajao 6+ minuta umesto par sekundi) i neupotrebljivosti Claude in Chrome alata tokom cele ove sesije.

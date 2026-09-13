@@ -49,33 +49,48 @@ export function Dashboard() {
       <div className="demo-banner">
         <strong>Demo režim:</strong> Ovo je razvojno okruženje sa test podacima.
       </div>
-      <div className="metrics-grid">
-        {metrics.map((m) => (
-          <div className="metric-card" key={m.label}>
-            <span className="metric-label">{m.label}</span>
-            <span className="metric-value">{m.value}</span>
-            {m.trend && (
-              <span className={`metric-trend ${m.trendClass}`}>
-                <TrendingUp size={14} /> {m.trend}
-              </span>
-            )}
-          </div>
-        ))}
+      <div className="card metrics-card">
+        <div className="metrics-card-header">
+          <h2>My Performance Over Time</h2>
+          <p className="card-subtitle">29 September 2025</p>
+        </div>
+        <div className="metrics-row">
+          {metrics.map((m) => (
+            <div className="metric-col" key={m.label}>
+              <span className="metric-label">{m.label}</span>
+              <div className="metric-value-row">
+                <span className="metric-value">{m.value}</span>
+                {m.trend && (
+                  <span className={`metric-trend ${m.trendClass}`}>
+                    <TrendingUp size={12} /> {m.trend}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="bottom-row-wide">
         <div className="card">
           <h2>Prospects to Watch</h2>
+          <p className="card-subtitle contact-list-subtitle">29 September 2025</p>
           <div className="contact-list">
             {demoContacts.map((c) => (
               <div className="contact-row" key={c.name}>
-                <div>
+                <div className="contact-main">
                   <div className="contact-name">{c.name}</div>
                   <div className="contact-sub">
                     <span>📌</span> {c.sub}
                   </div>
                 </div>
-                <span className="contact-date">{c.date}</span>
-                <span className={`contact-status ${c.statusClass}`}>{c.status}</span>
+                <div className="contact-field">
+                  <span className="contact-field-label">Last Contacted</span>
+                  <span className="contact-date">{c.date}</span>
+                </div>
+                <div className="contact-field">
+                  <span className="contact-field-label">Status</span>
+                  <span className={`contact-status ${c.statusClass}`}>{c.status}</span>
+                </div>
                 <span className="contact-actions"><MoreHorizontal size={16} /></span>
               </div>
             ))}
@@ -91,10 +106,22 @@ export function Dashboard() {
             </div>
           </div>
           <div className="date-strip">
-            {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((d) => (
-              <div className="day" key={d}>{d === 'Thu' ? '9' : ''}</div>
+            {[
+              { label: 'Mon', num: 6 },
+              { label: 'Tue', num: 7 },
+              { label: 'Wed', num: 8 },
+              { label: 'Thu', num: 9 },
+              { label: 'Fri', num: 10 },
+              { label: 'Sat', num: 11 },
+              { label: 'Sun', num: 12 },
+            ].map((d) => (
+              <div className="date-col" key={d.label}>
+                <span className="date-col-label">{d.label}</span>
+                <div className={`day ${d.label === 'Thu' ? 'active' : ''}`}>{d.num}</div>
+              </div>
             ))}
           </div>
+          <p className="calendar-today-label">Today</p>
           <div className="meetings-list">
             <div className="meeting-card yellow">
               <div className="meeting-info">

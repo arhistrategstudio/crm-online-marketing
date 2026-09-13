@@ -162,10 +162,18 @@ nav button svg {
   background: var(--row-bg);
 }
 
+.user-chip-main {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
 .user-chip-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  min-width: 0;
 }
 
 .user-chip strong {
@@ -192,6 +200,41 @@ nav button svg {
 .user-chip button:hover {
   background: var(--border);
   color: var(--text-primary);
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--text-primary);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+
+.avatar.avatar-small {
+  width: 32px;
+  height: 32px;
+  font-size: 12px;
+}
+
+.avatar-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: var(--radius-inner);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.avatar-chip:hover {
+  background: var(--row-bg);
 }
 
 /* Content area */
@@ -330,38 +373,56 @@ nav button svg {
   gap: 18px;
 }
 
-/* Metric cards grid */
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+/* Performance metrics card */
+.card-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 2px;
 }
 
-.metric-card {
-  background: var(--card);
-  border-radius: var(--radius-card);
-  padding: 22px;
-  box-shadow: var(--shadow-wide);
-  border: 1px solid var(--border);
+.metrics-card-header {
+  margin-bottom: 18px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.metrics-card-header h2 {
+  margin-bottom: 0;
+}
+
+.metrics-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px;
+}
+
+.metric-col {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
-.metric-card .metric-label {
+.metric-label {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
-.metric-card .metric-value {
+.metric-value-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.metric-value {
   font-size: 26px;
   font-weight: 800;
   letter-spacing: -0.02em;
   color: var(--text-primary);
 }
 
-.metric-card .metric-trend {
+.metric-trend {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -433,6 +494,10 @@ nav button svg {
   background: #e2e2dc;
 }
 
+.contact-main {
+  min-width: 0;
+}
+
 .contact-name {
   font-weight: 700;
   font-size: 14px;
@@ -447,10 +512,31 @@ nav button svg {
   gap: 4px;
 }
 
+.contact-list-subtitle {
+  margin-top: -12px;
+  margin-bottom: 16px;
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.contact-field:first-of-type {
+  margin-left: auto;
+}
+
+.contact-field-label {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
 .contact-date {
   font-size: 12px;
   color: var(--text-secondary);
-  margin-left: auto;
 }
 
 .contact-status {
@@ -458,7 +544,6 @@ nav button svg {
   font-weight: 700;
   padding: 3px 10px;
   border-radius: 20px;
-  margin-left: 8px;
 }
 
 .status-qualified {
@@ -525,7 +610,27 @@ nav button svg {
 .date-strip {
   display: flex;
   gap: 6px;
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+}
+
+.date-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.date-col-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.calendar-today-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
 }
 
 .date-strip .day {
@@ -652,7 +757,7 @@ nav button svg {
 
 /* Responsive */
 @media (max-width: 1024px) {
-  .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+  .metrics-row { gap: 24px; }
   .bottom-row, .bottom-row-wide { grid-template-columns: 1fr; }
 }
 
@@ -660,7 +765,7 @@ nav button svg {
   .shell { flex-direction: column; }
   aside { width: 100%; }
   .content { margin-left: 0; }
-  .metrics-grid { grid-template-columns: 1fr; }
+  .metrics-row { flex-direction: column; gap: 16px; }
   .search-bar { width: 200px; }
 }
 
