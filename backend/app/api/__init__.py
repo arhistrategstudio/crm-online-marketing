@@ -6,6 +6,7 @@ from app.api.dashboard import router as dashboard_router
 from app.api.integrations import router as integrations_router
 from app.api.leads import router as leads_router
 from app.api.meetings import router as meetings_router
+from app.api.webhooks import router as webhooks_router
 
 __all__ = [
     "auth_router",
@@ -16,4 +17,5 @@ __all__ = [
     "integrations_router",
     "leads_router",
     "meetings_router",
+    "webhooks_router",
 ]

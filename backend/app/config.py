@@ -15,6 +15,11 @@ class Settings(BaseSettings):
     cors_origins: Annotated[list[str], NoDecode] = ["http://127.0.0.1:5173", "http://localhost:5173"]
     app_env: str = "development"
 
+    meta_app_secret: str | None = None
+    meta_verify_token: str | None = None
+    meta_page_access_token: str | None = None
+    meta_graph_api_version: str = "v21.0"
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def split_cors_origins(cls, value: object) -> object:

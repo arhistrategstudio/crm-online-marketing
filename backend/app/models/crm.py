@@ -117,6 +117,23 @@ class Meeting(Base, TimestampMixin):
         return self.contact.name if self.contact else None
 
 
+class MetaLeadEvent(Base, TimestampMixin):
+    """Audit trail for Meta (Facebook/Instagram) Lead Ads webhook deliveries."""
+
+    __tablename__ = "meta_lead_events"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    leadgen_id: Mapped[str] = mapped_column(String(255), unique=True, index=True)
+    page_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    form_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    ad_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    status: Mapped[str] = mapped_column(String(30), default="received")
+    error: Mapped[str | None] = mapped_column(Text, nullable=True)
+    raw_payload: Mapped[str | None] = mapped_column(Text, nullable=True)
+    contact_id: Mapped[int | None] = mapped_column(ForeignKey("contacts.id"), nullable=True)
+    lead_id: Mapped[int | None] = mapped_column(ForeignKey("leads.id"), nullable=True)
+
+
 class Campaign(Base, TimestampMixin):
     __tablename__ = "campaigns"
 
