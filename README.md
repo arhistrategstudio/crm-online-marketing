@@ -2,6 +2,8 @@
 
 CRM za marketing agencije i vlasnike biznisa koji prikupljaju upite sa **Facebooka, Instagrama, Vibera i email-a**, prate ih kroz prodajni levak i mere efikasnost reklamnih kampanja.
 
+🔗 **Live aplikacija**: [crm-online-marketing.vercel.app](https://crm-online-marketing.vercel.app) · Backend API: [crm-online-marketing-backend.onrender.com](https://crm-online-marketing-backend.onrender.com/api/v1/health)
+
 ## Status projekta — Beta v1
 
 Sve funkcionalnosti ispod rade nad **stvarnim podacima iz baze** (nema tvrdo upisanih/demo prikaza u interfejsu) i pokrivene su automatskim testovima (61 backend test). Ono što namerno **nije** uključeno u ovu verziju je jasno označeno.
@@ -14,10 +16,11 @@ Sve funkcionalnosti ispod rade nad **stvarnim podacima iz baze** (nema tvrdo upi
 | Prodajni levak (kanban po fazama) | ✅ Gotovo |
 | Kampanje (CRUD, KPI po kampanji) | ✅ Gotovo |
 | Podešavanja (profil, promena lozinke) | ✅ Gotovo |
-| Prijava (email/lozinka + Google) | ✅ Gotovo |
+| Prijava — email/lozinka | ✅ Gotovo |
+| Prijava — Google | ⚙️ Radi lokalno; na live sajtu čeka da se doda `https://crm-online-marketing.vercel.app` u Authorized JavaScript origins za OAuth Client (Google Cloud Console) |
 | Meta (Facebook/Instagram) Lead Ads webhook | ⚙️ Kod gotov i testiran, **namerno diskonektovan** — čeka ispravan Page Access Token (vidi `docs/integrations.md`) |
 | Viber Bot API | ⚙️ Kod gotov i testiran, **namerno diskonektovan** — čeka da korisnik lično poveže Viber Public Account (vidi `docs/integrations.md`) |
-| Produkcioni hosting (javno dostupan URL) | ❌ Aplikacija trenutno radi samo lokalno; nije još postavljena na hosting (vidi `docs/deployment.md`) |
+| Produkcioni hosting (javno dostupan URL) | ✅ Live na Neon + Render + Vercel (besplatan plan — backend se uspava posle ~15 min neaktivnosti, prvi sledeći zahtev čeka 30-50s) |
 
 ## Funkcionalnosti
 
