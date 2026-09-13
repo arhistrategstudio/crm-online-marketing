@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { BarChart3, Cable, Contact, Inbox, LogOut, Megaphone, Moon, Settings, Kanban, Sun } from "lucide-react";
+import { BarChart3, Cable, Contact, Inbox, Kanban, LogOut, Megaphone, Settings, Search, Bell, ChevronsLeft, ChevronsRight, MoreHorizontal } from "lucide-react";
 import { Page } from "../types";
 import { useAuth } from "../lib/auth";
 
@@ -16,59 +16,79 @@ export const nav: [Page, typeof BarChart3][] = [
 type ShellProps = {
   page: Page;
   setPage: (page: Page) => void;
-  dark: boolean;
-  setDark: (dark: boolean) => void;
-  accent: string;
-  setAccent: (accent: string) => void;
-  onOpenCommand: () => void;
   children: ReactNode;
+  onOpenCommand: () => void;
 };
 
-export function Shell({ page, setPage, dark, setDark, accent, setAccent, onOpenCommand, children }: ShellProps) {
+export function Shell({ page, setPage, children, onOpenCommand }: ShellProps) {
   const { user, logout } = useAuth();
 
   return (
-    <main className="shell">
-      <aside>
-        <div className="brand">CRM<span>+</span></div>
-        <nav>
-          {nav.map(([name, Icon]) => (
-            <button className={page === name ? "active" : ""} onClick={() => setPage(name)} key={name}>
-              <Icon size={18} />
-              {name}
-            </button>
-          ))}
-        </nav>
-        {user && (
-          <div className="user-chip">
-            <div>
-              <strong>{user.name}</strong>
-              <span>{user.email}</span>
+    <div className="app-container">
+      <div className="shell">
+        <aside>
+          <div className="brand">
+            <div className="brand-icon">📞</div>
+            Called
+          </div>
+          <nav>
+            {nav.map(([name, Icon]) => (
+              <button className={page === name ? "active" : ""} onClick={() => setPage(name)} key={name}>
+                <Icon size={18} />
+                {name}
+              </button>
+            ))}
+          </nav>
+          {user && (
+            <div className="user-chip">
+              <div className="user-chip-info">
+                <strong>{user.name}</strong>
+                <span>{user.email}</span>
+              </div>
+              <button aria-label="Odjava" onClick={logout}><LogOut size={16} /></button>
             </div>
-            <button aria-label="Odjava" onClick={logout}><LogOut size={16} /></button>
+          )}
+        </aside>
+        <section className="content">
+          <div className="topbar">
+            <div className="topbar-top">
+              <div className="search-bar">
+                <Search size={18} />
+                <input type="text" placeholder="Search" />
+                <span className="shortcut-tag">⌘K</span>
+              </div>
+              <div className="ticker">
+                <div className="ticker-item">
+                  <span className="ticker-label">Gold</span>
+                  <span className="ticker-value">$4,114.44</span>
+                </div>
+                <div className="ticker-item">
+                  <span className="ticker-label">Silver</span>
+                  <span className="ticker-value">$48.42</span>
+                </div>
+              </div>
+              <div className="header-actions">
+                <button className="icon-btn" onClick={onOpenCommand}><Search size={18} /></button>
+                <button className="icon-btn"><MoreHorizontal size={18} /></button>
+                <button className="icon-btn"><Bell size={18} /></button>
+                <div className="user-chip" style={{ marginTop: 0, padding: '6px 10px' }}>
+                  <div className="user-chip-info">
+                    <strong style={{ fontSize: '12px' }}>Mike Taylor</strong>
+                    <span style={{ fontSize: '10px' }}>mike@example.com</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="topbar-title">
+              <h1>{page}</h1>
+              <p>Welcome to your dashboard</p>
+            </div>
           </div>
-        )}
-      </aside>
-      <section className="content">
-        <header>
-          <div>
-            <p>CRM Online Marketing</p>
-            <h1>{page}</h1>
+          <div className="main-content">
+            {children}
           </div>
-          <div className="header-actions">
-            <select aria-label="Akcentna boja" value={accent} onChange={(e) => setAccent(e.target.value)}>
-              <option value="siva">Standardna siva</option>
-              <option value="plava">Okean plava</option>
-              <option value="narandzasta">Narandžasta</option>
-              <option value="zelena">Šumsko zelena</option>
-            </select>
-            <button className="command" onClick={onOpenCommand}>⌘ K</button>
-            <button className="command" onClick={() => setDark(!dark)}>{dark ? <Sun /> : <Moon />} Tema</button>
-          </div>
-        </header>
-        <div className="demo">Razvojni režim: demo/test podaci.</div>
-        {children}
-      </section>
-    </main>
+        </section>
+      </div>
+    </div>
   );
 }
