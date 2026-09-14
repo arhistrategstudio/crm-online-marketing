@@ -40,6 +40,9 @@ type Meeting = {
   end_at: string;
 };
 
+type SetupStep = { key: string; title: string; done: boolean };
+type SetupStatus = { configured: boolean; steps: SetupStep[] };
+
 const monthNames = [
   "Januar", "Februar", "Mart", "April", "Maj", "Jun",
   "Jul", "Avgust", "Septembar", "Oktobar", "Novembar", "Decembar",
@@ -103,6 +106,7 @@ export function Dashboard() {
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [contacts, setContacts] = useState<MeetingContactOption[]>([]);
   const [addMeeting, setAddMeeting] = useState(false);
+  const [setup, setSetup] = useState<SetupStatus>({ configured: true, steps: [] });
 
   useEffect(() => {
     apiFetch("/dashboard/summary")
@@ -116,6 +120,10 @@ export function Dashboard() {
     apiFetch("/contacts")
       .then((r) => (r.ok ? r.json() : Promise.reject()))
       .then((items: { id: number; name: string }[]) => setContacts(items.map((c) => ({ id: c.id, name: c.name }))))
+      .catch(() => undefined);
+    apiFetch("/dashboard/setup")
+      .then((r) => (r.ok ? r.json() : Promise.reject()))
+      .then(setSetup)
       .catch(() => undefined);
   }, []);
 
@@ -166,9 +174,20 @@ export function Dashboard() {
 
   return (
     <>
-      <div className="demo-banner">
-        <strong>Demo režim:</strong> Ovo je razvojno okruženje sa test podacima.
-      </div>
+      {!setup.configured && (
+        <div className="card setup-card">
+          <h2>Aktivacija aplikacije</h2>
+          <p className="card-subtitle">Koraci za prvi dan rada sa CRM-om — detaljna uputstva u <code>docs/production-v1.md</code></p>
+          <ul className="setup-list">
+            {setup.steps.map((step) => (
+              <li key={step.key} className={step.done ? "done" : undefined}>
+                <span className={`setup-check ${step.done ? "done" : ""}`}>{step.done ? "✓" : "·"}</span>
+                {step.title}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="funnel-summary card">
         <div className="funnel-metric">
           <span className="metric-label">Aktivni leadovi</span>

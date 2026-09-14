@@ -31,7 +31,7 @@ settings = get_settings()
 
 app = FastAPI(
     title="CRM Online Marketing API",
-    version="0.1.0",
+    version="1.0.0",
     lifespan=lifespan,
 )
 app.add_middleware(
@@ -60,3 +60,9 @@ app.include_router(meetings_router, prefix="/api/v1", dependencies=protected)
 def health_check() -> dict[str, str]:
     """Returns a simple confirmation that the backend is running."""
     return {"status": "ok"}
+
+
+@app.get("/api/v1/version")
+def version_info() -> dict[str, str]:
+    """Returns the current application version (used during deployment verification)."""
+    return {"version": app.version}

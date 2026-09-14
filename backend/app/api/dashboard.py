@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.config import get_settings
 from app.database import get_db
 from app.models import (
     ACTIVE_STAGES,
@@ -13,9 +14,11 @@ from app.models import (
     CampaignStatus,
     Contact,
     Conversation,
+    Integration,
     Lead,
     LeadStage,
     Proposal,
+    User,
 )
 from app.schemas.dashboard import (
     DashboardSummary,
@@ -23,6 +26,8 @@ from app.schemas.dashboard import (
     NotificationFeed,
     NotificationItem,
     ProspectRead,
+    SetupStatus,
+    SetupStep,
 )
 
 
@@ -186,3 +191,26 @@ def dashboard_notifications(db: Session = Depends(get_db)) -> NotificationFeed:
     ]
     items.sort(key=lambda item: item.created_at, reverse=True)
     return NotificationFeed(count=len(items), items=items[:10])
+
+
+@router.get("/setup", response_model=SetupStatus)
+def dashboard_setup(db: Session = Depends(get_db)) -> SetupStatus:
+    """First-client activation checklist: which steps are already completed for this tenant."""
+    settings = get_settings()
+    user_count = db.scalar(select(func.count()).select_from(User)) or 0
+    contact_count = db.scalar(select(func.count()).select_from(Contact)) or 0
+    campaign_count = db.scalar(select(func.count()).select_from(Campaign)) or 0
+    lead_count = db.scalar(select(func.count()).select_from(Lead)) or 0
+    connected_channels = db.scalar(
+        select(func.count()).select_from(Integration).where(Integration.status == "Povezano")
+    ) or 0
+
+    steps = [
+        SetupStep(key="account", title="Kreiran vlasnički nalog", done=user_count > 0),
+        SetupStep(key="google", title="Google prijava podešena", done=bool(settings.google_client_id)),
+        SetupStep(key="channels", title="Povezani kanali (Meta/Viber)", done=connected_channels > 0),
+        SetupStep(key="contacts", title="Dodati prvi kontakti", done=contact_count > 0),
+        SetupStep(key="campaigns", title="Kreirana prva kampanja", done=campaign_count > 0),
+        SetupStep(key="leads", title="Prvi upiti u levku", done=lead_count > 0),
+    ]
+    return SetupStatus(configured=all(step.done for step in steps), steps=steps)

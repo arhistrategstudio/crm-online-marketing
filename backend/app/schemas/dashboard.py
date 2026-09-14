@@ -48,3 +48,14 @@ class DashboardSummary(BaseModel):
     campaigns_active: int
     avg_cost_per_lead: float | None
     lost_reasons: list[LostReasonItem]
+
+
+class SetupStep(BaseModel):
+    key: str
+    title: str
+    done: bool
+
+
+class SetupStatus(BaseModel):
+    configured: bool
+    steps: list[SetupStep]

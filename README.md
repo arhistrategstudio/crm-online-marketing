@@ -102,6 +102,8 @@ Dve opcije, obe detaljno opisane u [`docs/deployment.md`](docs/deployment.md):
 - **Besplatan hosting (Neon + Render + Vercel)** — preporučeno za beta verziju, live URL za par minuta po servisu. Repo sadrži `render.yaml` koji Render prepoznaje automatski.
 - **Sopstveni server (Docker)** — `docker compose up -d --build` pokreće PostgreSQL i backend kontejner (koji automatski primenjuje Alembic migracije pre starta).
 
+Izlazak iz test moda i uvođenje prvog klijenta (prvi nalog → „Vlasnik", aktivacioni checklist, stvarno povezivanje Meta/Viber) opisani su u [`docs/production-v1.md`](docs/production-v1.md).
+
 ## Struktura projekta
 
 ```

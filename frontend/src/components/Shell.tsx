@@ -29,8 +29,28 @@ export const nav: [Page, typeof BarChart3][] = [
   ["Podešavanja", Settings],
 ];
 
+const pageSubtitles: Record<Page, string> = {
+  Dashboard: "Pregled prodaje i aktivnosti",
+  Inbox: "Razgovori sa klijentima",
+  Kontakti: "Vaša baza kontakata",
+  "Prodajni levak": "Prodaja kroz faze",
+  Kampanje: "Oglasi i praćenje potrošnje",
+  Integracije: "Povezani kanali i kanali za upite",
+  Podešavanja: "Nalog i podešavanja aplikacije",
+};
+
+const pageEyebrows: Record<Page, string> = {
+  Dashboard: "01 / Pregled",
+  Inbox: "02 / Razgovori",
+  Kontakti: "03 / Baza kontakata",
+  "Prodajni levak": "04 / Prodaja",
+  Kampanje: "05 / Kampanje",
+  Integracije: "06 / Kanali",
+  Podešavanja: "07 / Nalog",
+};
+
 type ContactSearchResult = { id: number; name: string; phone: string | null; email: string | null };
-type NotificationItem = { type: "message" | "lead"; text: string; reference_id: number; created_at: string };
+type NotificationItem = { type: "message" | "lead" | "reminder"; text: string; reference_id: number; created_at: string };
 
 type ShellProps = {
   page: Page;
@@ -103,9 +123,10 @@ export function Shell({ page, setPage, children, onOpenCommand }: ShellProps) {
       <div className="shell">
         <aside>
           <div className="brand">
-            <div className="brand-icon"><Phone size={16} fill="white" /></div>
+            <div className="brand-icon"><Phone size={16} /></div>
             Called
           </div>
+          <span className="version-badge">v1.0</span>
           <nav>
             {nav.map(([name, Icon]) => (
               <button className={page === name ? "active" : ""} onClick={() => setPage(name)} key={name}>
@@ -153,6 +174,7 @@ export function Shell({ page, setPage, children, onOpenCommand }: ShellProps) {
               </div>
               <div className="header-actions">
                 <button className="icon-btn" onClick={onOpenCommand}><Search size={18} /></button>
+                <div className="online-pill"><span className="online-dot" />ONLINE</div>
                 <div className="dropdown-wrap" ref={notifRef}>
                   <button className="icon-btn" onClick={() => setNotifOpen((v) => !v)}>
                     <Bell size={18} />
@@ -191,8 +213,9 @@ export function Shell({ page, setPage, children, onOpenCommand }: ShellProps) {
               </div>
             </div>
             <div className="topbar-title">
+              <span className="page-eyebrow">{pageEyebrows[page]}</span>
               <h1>{page}</h1>
-              <p>Welcome to your dashboard</p>
+              <p>{pageSubtitles[page]}</p>
             </div>
           </div>
           <div className="main-content">

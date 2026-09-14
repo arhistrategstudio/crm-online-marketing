@@ -224,3 +224,52 @@ Prva verzija aplikacije je završena i uspešno deployovana (Neon + Render + Ver
 - `styles.css`: veliki zeleno-crveni gradijent zamenjen mirnom neutralnom pozadinom (suptilan radijalni akcent), dodat stil za funnel/kanban/drawer/timeline/statistiku.
 - `npm run build` prolazi bez grešaka. Ručna provera u pregledaču nije rađena automatski (Claude in Chrome) — preporučena provera korisnika.
 - Lokalna razvojna SQLite baza (`backend/crm.db`) je ručno dopunjena novim kolonama/tabelama (bez brisanja postojećih podataka) da bi stari demo podaci nastavili da rade.
+
+## Nove instrukcije (korak 110) — Figma dizajn + izlazak iz test moda → production v1.0
+
+Korisnik je dostavio dva Figma linka (design i proto, node 3-4, „Untitled"):
+- https://www.figma.com/design/BAEL74iq4MGXKwGEla2yj6/Untitled?node-id=3-4
+- https://www.figma.com/proto/BAEL74iq4MGXKwGEla2yj6/Untitled?node-id=3-4
+
+Cilj: (a) UI/estetika **identična** dizajnu sa linkova, (b) priprema aplikacije za **production-ready verziju 1.0** — sve funkcije otključane/omogućene + aktivacioni koraci za prvog klijenta-korisnika (repo: arhistrategstudio/crm-online-marketing, live: https://crm-online-marketing.vercel.app).
+
+**Napomena o pristupu Figmi (BLOCKER za deo (a)):** embed/proto interstisijal traži prijavu u Figmu (login-JS), ne postoji lokalni eksport, a WebFetch vraća samo HTML čaura bez sadržaja ekrana. Da bi se dizajn verno reprodukovao potreban je screenshot/eksport ekrana (PNG/PDF) ili Figma token/eksport fajl od korisnika. **Produkcijska priprema (deo (b)) se radi nezavisno** i obavlja se u ogrankama koraka 111+.
+
+### 111. Production priprema v1.0 — izlazak iz test moda (urađeno; dizajn po Figmi ostaje BLOCKED)
+
+**Backend:**
+- `app/main.py`: verzija `1.0.0` + novi `GET /api/v1/version` (vraća `{"version": "1.0.0"}`).
+- `app/api/auth.py`: `_first_user_role()` — **prvi registrovan korisnik automatski postaje „Vlasnik"** (i za `signup` i za Google prijavu); svaki sledeći je „Korisnik".
+- `app/api/dashboard.py` + `schemas/dashboard.py`: novi `GET /api/v1/dashboard/setup` (`SetupStatus`) — aktivacioni checklist za prvog klijenta (`account/google/channels/contacts/campaigns/leads` + `configured`).
+- Novi testovi `tests/test_production.py` (4): version 1.0.0, prvi korisnik→Vlasnik/drugi→Korisnik, setup zahteva auth, setup vraća `account done`. **Ukupno 72 testa prolazi.**
+
+**Frontend:**
+- `components/Shell.tsx`: uklonjen hardkodovan engleski „Welcome to your dashboard" → srpski podnaslovi po strani (`pageSubtitles`); u sidebaru **v1.0 badge**; tip notifikacija proširen na `reminder`.
+- `pages/Dashboard.tsx`: **uklonjen demo banner**; dodata kartica „Aktivacija aplikacije" (čita `/dashboard/setup`, sakriva se kad je `configured: true`).
+- `pages/Integrations.tsx`: **uklonjena simulacija/demo** — bez `window.confirm` upozorenja, bez „Demo režim" banera i „Simulirani status" teksta; status je stvarni zapis u bazi, sa uputom na `docs/production-v1.md`.
+- `package.json`: verzija `1.0.0`.
+- `styles.css`: uklonjen `.demo-banner` blok i `.demo` alias (ne koriste se više); dodati stilovi `version-badge`, `setup-card/setup-list/setup-check`; vraćen slučajno uklonjen `.contact-toolbar` rule.
+- Obrisani mrtvi CSS fajlovi: `src/auth.css`, `src/contact-modal.css`, `src/contact-toolbar.css` (nisu nigde importovani).
+- `npm run build` prolazi.
+
+**Dokumentacija:**
+- Novi `docs/production-v1.md` — aktivacioni runbook za prvog klijenta: deploy preduslovi, env promenljive, korak 1 (prvi nalog→Vlasnik), checklist sa mapiranjem na `/dashboard/setup`, stvarno povezivanje Meta/Viber (tokeni + webhook URL-ovi), verifikacija (`/version`, `/health`), i checklista izlaska iz test moda.
+- `README.md`: dodata referenca na `docs/production-v1.md` u Produkcija sekciji.
+
+**BLOCKER za dizajn (deo (a)):** čeka se eksport ekrana Figma dizajna od korisnika (Figma traži prijavu; bez vidljivog izgleda ne mogu da reprodukujem dizajn). Čim korisnik dostavi screenshot/PDF/eksport (ili pristup fajlu), rad se nastavlja na `styles.css`, `main.tsx`, `Shell.tsx` i svim stranicama da bi se UI uskladio 1:1.
+
+### 112. Figma dizajn dobijen (fajl + token) i primenjen na UI/estetiku
+
+Korisnik je dostavio `design/Untitled.fig` (Figma „Save local copy", ZIP: `canvas.fig` binarni `fig-kiwij`, `thumbnail.png`, `meta.json`, `images/` sa 2 PNG-a) i Figma PAT. Token #1 (`figd_CTgPUbTn...`) imao je samo `current_user:read` scope -> `/v1/files/{key}` je vraćao 403 (`file_content:read` potreban). Token #2 (`figd_v6cJzYPv...`) sa `file_content:read` -> `GET /v1/files/BAEL74iq4MGXKwGEla2yj6/nodes?ids=3:4` vraća 200 (kompletan scene graph, 94 noda, `ai-interface-dark` FRAME 1440x1522, pozadinski layer `ai-background-layer` IMAGE 1184x864 + radial gradijent `#03020a`; jedina aktivna slika je `4940e2f48133`; `4623f6d8` se ne koristi u dizajnu).
+
+Spec ekstrahovan (detektovana i paint-opacity: paneli su beli @ 0.039 + BACKGROUND_BLUR; dugmad 0.082; primarni button sa zlatnim DROP_SHADOW; trafice #ef4444/#f59e0b/#10b981; LATENCY i terminal linije u telem. panelu). Dizajn je dark „AI/terminal glass" estetika: pozadina #03020a + neural slika + radijalna vinjeta, stakleni paneli (4% belo + blur 16-24), zlatni akcent #ffd700, mono etikete (Geist Mono), izvlačena slova Outfit, telo Geist.
+
+**Implementacija (frontend):**
+- `index.html`: Google Fonts = Outfit (400-800) + Geist (400-700) + Geist Mono (400-600); `theme-color #03020a`.
+- `frontend/public/bg/neural.jpg` (167 KB, 1184x864, JPEG q74; original 1.7 MB PNG) + `neural-poster.jpg` (29 KB; za buduću upotrebu) — pozadinska neural slika iz dizajna (konvertovana uz pomoć Pillow, instaliran samo u dev venv, van requirements.txt).
+- `styles.css` = **kompletna prepiska na design tokens**: `:root` (#03020a, staklo rgba(255,255,255,.04), gold #ffd700, sekundarni #a3a3c2, radijus card 16, blur 22); body ima fiksne slojeve neural.jpg + radial vinjeta; sidebar/topbar/cards/drawer/modali => frosted glass (`backdrop-filter`); nav dobija serijske brojeve preko `counter` („01 /"..„07 /"), aktivni nav zlatni glass; dugmad (accent-btn, toolbar, submit, configure) = mono gold na staklu sa zlatnim borderom i blagim glow-om; `.badge`/`.contact-status` = mono uppercase tinted chips; statusi mapirani na paletu dizajna; `.page-eyebrow` novi (mono 11px zlato, „01 / Pregled"..); `.online-pill` novi (crna kapsula, zlatna tačka, „ONLINE") po uzoru na header pill u dizajnu; kanban/funnel/drawer/timeline/inbox/kalendar restilizovani na glass; auth strana = dark staklo (gradijent zamenjen neural pozadinom); scrollbar i focus zlatni. Svi postojeći selektori zadržani + dodati `.campaigns-table`, `.metrics-card`, `.online-pill`, `.page-eyebrow`.
+- `Shell.tsx`: intra pojavljivanje `pageEyebrows` iznad naslova; `ONLINE` pill u header-u; gold ring na brand icon.
+- `Login.tsx`: `fill="white"` uklonjen sa brand ikone (sada zlatna na zlatnom prstenu).
+- `npm run build` prolazi.
+
+Data napomena: u korenu projekta postoji neočekivan, netrackovan `repo-CRM/` (prazan git repo, 1 commit „Initial commit", sadržaj `# repo:CRM`) — verovatno slučajno kreiran; NIJE commitovan. `design/Untitled.fig` (2.3 MB) takođe netrackovan.

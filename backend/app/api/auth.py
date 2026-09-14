@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from google.auth.transport import requests as google_requests
 from google.oauth2 import id_token as google_id_token
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.config import get_settings
@@ -18,11 +18,22 @@ def issue_token(user: User) -> TokenResponse:
     return TokenResponse(access_token=create_access_token(user.id), user=UserRead.model_validate(user))
 
 
+def _first_user_role(db: Session) -> str:
+    """The very first registered account becomes the tenant owner (role „Vlasnik")."""
+    return "Vlasnik" if (db.scalar(select(func.count()).select_from(User)) or 0) == 0 else "Korisnik"
+
+
 @router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
 def signup(data: SignupRequest, db: Session = Depends(get_db)) -> TokenResponse:
     if db.scalar(select(User).where(User.email == data.email)):
         raise HTTPException(status_code=409, detail="Nalog sa ovim email-om već postoji.")
-    user = User(name=data.name, email=data.email, password_hash=hash_password(data.password), auth_provider="local")
+    user = User(
+        name=data.name,
+        email=data.email,
+        password_hash=hash_password(data.password),
+        auth_provider="local",
+        role=_first_user_role(db),
+    )
     db.add(user)
     db.commit()
     db.refresh(user)
@@ -60,7 +71,13 @@ def google_login(data: GoogleAuthRequest, db: Session = Depends(get_db)) -> Toke
         if not user.google_id:
             user.google_id = google_id
     else:
-        user = User(name=name, email=email, google_id=google_id, auth_provider="google")
+        user = User(
+            name=name,
+            email=email,
+            google_id=google_id,
+            auth_provider="google",
+            role=_first_user_role(db),
+        )
         db.add(user)
     db.commit()
     db.refresh(user)

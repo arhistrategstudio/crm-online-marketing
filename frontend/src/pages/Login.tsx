@@ -24,7 +24,7 @@ export function Login({ onSwitchToSignup }: { onSwitchToSignup: () => void }) {
     <main className="auth-page">
       <section className="auth-card">
         <div className="brand">
-          <div className="brand-icon"><Phone size={16} fill="white" /></div>
+          <div className="brand-icon"><Phone size={16} /></div>
           Called
         </div>
         <p className="subtitle">Prijavite se na svoj nalog</p>
